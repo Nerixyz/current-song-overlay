@@ -1,0 +1,47 @@
+:root {
+    --text-color: #eee;
+    --font-family: sans-serif;
+
+    --card-color: #3878ff;
+    --card-border-radius: 10px;
+    --card-shadow-blur: 10px;
+    --card-shadow: #0007;
+
+    --card-margin: 5px;
+
+    --transition-duration: 250ms;
+    --transition-origin: top left;
+
+    --song-name-shadow: #0006;
+    --song-artist-shadow: #0005;
+}
+/*
+    This is the card
+
+ Uncomment (remove /* and * /) the properties to position the card.
+ You can also position the card relative to the size, like "top: 50%" => half way
+
+ */
+#current-song {
+    /* TOP LEFT */
+    top: 0;
+    left: 0;
+
+    /* TOP RIGHT */
+    /*
+    top: 0;
+    right: 0;
+    */
+
+    /* BOTTOM LEFT */
+    /*
+    bottom: 0;
+    left: 0;
+    */
+
+    /* BOTTOM RIGHT */
+    /*
+    bottom: 0;
+    right: 0;
+    */
+}

@@ -1,0 +1,22 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^5.0.2",
+    "@types/firefox-webext-browser": "^78.0.0",
+    "prettier": "^2.0.5",
+    "rollup": "^2.22.1",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.7"
+  }
+}
