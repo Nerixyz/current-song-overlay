@@ -1,6 +1,8 @@
 import { TabChangeHandler } from './TabChangeHandler';
-import { connectWithReconnect } from './utilities';
+import { connectWithReconnect, fixChrome } from './utilities';
 import { UpdateEventArg, UpdateEventMap } from './types';
+
+fixChrome();
 
 console.log('background');
 const handler = new TabChangeHandler();

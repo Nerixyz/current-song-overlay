@@ -34,3 +34,17 @@ export function connectWithReconnect(url: string): {value?: WebSocket} {
   set();
   return obj;
 }
+
+export function fixChrome() {
+  if(!globalThis.browser) {
+    // @ts-ignore -- fix for chrome
+    globalThis.browser = chrome;
+  }
+  if(browser.tabs.get.length === 0) {
+    const initialGet = browser.tabs.get;
+    browser.tabs.get = tabId => new Promise(resolve => {
+      // @ts-ignore -- chrome i guess
+      initialGet(tabId, resolve);
+    })
+  }
+}

@@ -55,7 +55,7 @@ export class TabChangeHandler {
     } else {
       audible = audible.filter(x => !x.active);
       // at least one element (one active tab, but before we had >1)
-      if(this.currentlySent?.title !== audible[0].title) {
+      if(this.currentlySent?.title !== audible[0]?.title) {
         this.currentlySent = {...audible[0]};
         this.emitActive(audible[0].title);
       }
