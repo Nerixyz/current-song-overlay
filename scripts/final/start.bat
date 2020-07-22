@@ -1,0 +1,1 @@
+powershell start.ps1
