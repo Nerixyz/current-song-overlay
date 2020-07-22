@@ -14,7 +14,7 @@ export function splitTitle(title: string): { name: string, artists?: string[] } 
     }
 }
 
-export function autoReconnect(startFn: () => Promise<unknown>): [() => Promise<void>, () => void] {
+export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Error) => void): [() => Promise<void>, () => void] {
     let timeoutId: number | undefined = undefined;
     let die = false;
     const workFn = async () => {
@@ -25,6 +25,7 @@ export function autoReconnect(startFn: () => Promise<unknown>): [() => Promise<v
                 await startFn();
                 factor = 10;
             } catch (e) {
+                onError?.(e);
                 factor = Math.min(factor + 10, 300);
             }
             if(die) break;
@@ -37,11 +38,15 @@ export function autoReconnect(startFn: () => Promise<unknown>): [() => Promise<v
     }];
 }
 
+export interface Reloadable {
+    stop(): any | Promise<any>;
+    start(): Promise<void>;
+}
 export function createReloader() {
-    const active: [{stop: () => void | Promise<void>}, () => void][] = [];
+    const active: [Reloadable, () => void][] = [];
     return {
-        push(obj: {stop: () => any | Promise<any>}, start: () => Promise<void>): Promise<void> {
-            const reconnectInfo = autoReconnect(start);
+        start(obj: Reloadable, onError?: (e: Error) => void): Promise<void> {
+            const reconnectInfo = autoReconnect(() => obj.start(), onError);
             active.push([obj, reconnectInfo[1]]);
             return reconnectInfo[0]();
         },
@@ -56,6 +61,19 @@ export function createReloader() {
 
 export function readCookieEnvVar(): string {
     return expectAndMirror(Deno.env.get('SPOTIFY_COOKIES'), 'No SPOTIFY_COOKIES, the cookie monster is sad now');
+}
+
+/**
+ * Gets ENABLE_{vlc/spotify...}
+ * @param {string} component
+ * @returns {boolean} if not defined: false, if 0 or false: false, else true
+ */
+export function readEnableEnvVar(component: string): boolean {
+    const content = Deno.env.get(`ENABLE_${component.toUpperCase()}`)?.toLowerCase();
+    if(typeof content !== 'undefined') {
+        return !['0', 'false'].includes(content);
+    }
+    return false;
 }
 
 function expectAndMirror<T>(value: T | undefined, ifUndefined: string): T {

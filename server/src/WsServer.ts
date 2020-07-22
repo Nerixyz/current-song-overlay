@@ -19,7 +19,8 @@ export class WsServer<MsgType = unknown> {
     sendToAll(message: MsgType) {
         this.lastMessage = message;
         for (const ws of this.sockets) {
-            ws.send(JSON.stringify(message));
+            if(!ws.isClosed)
+                ws.send(JSON.stringify(message));
         }
     }
 
@@ -49,6 +50,7 @@ export class WsServer<MsgType = unknown> {
             if (isWebSocketCloseEvent(event)) this.sockets = this.sockets.filter(x => x !== ws);
             if (typeof event === 'string') this.onMessage?.(JSON.parse(event));
         }
+        this.sockets = this.sockets.filter(x => x !== ws);
     }
 
     public async stop(): Promise<void> {

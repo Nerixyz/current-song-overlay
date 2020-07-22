@@ -21,9 +21,16 @@ export class SpotifyClient {
         this.http = new SpotifyHttpApi(this.accessToken);
         this.cache = new SpotifyCache(this.http);
 
+        // TODO: URL
         this.ws = await connectWebSocket(`wss://gew-dealer.spotify.com/?access_token=${encodeURIComponent(this.accessToken)}`,
             new Headers({'Cookies': this.cookies})
         );
+        console.debug('Connected to spotify WebSocket');
+    }
+
+    async start() {
+        await this.connect();
+        this.startPing();
     }
 
 
