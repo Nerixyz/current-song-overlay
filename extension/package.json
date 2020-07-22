@@ -5,8 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
-    "watch": "rollup -c -w"
+    "build": "rollup -c -m && web-ext build -s dist/build --overwrite-dest",
+    "rollup-watch": "rollup -c -m -w",
+    "web-ext-watch": "web-ext run -s dist/build",
+    "watch": "npm-run-all --parallel rollup-watch web-ext-watch",
+    "pack": "powershell scripts/pack-src.ps1",
+    "sign-unlisted": "powershell scripts/sign-unlisted.ps1",
+    "sign-listed": "powershell scripts/sign-listed.ps1"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +21,10 @@
     "@types/firefox-webext-browser": "^78.0.0",
     "prettier": "^2.0.5",
     "rollup": "^2.22.1",
+    "rollup-plugin-copy": "^3.3.0",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "web-ext": "^4.3.0",
+    "npm-run-all": "^4.1.5"
   }
 }

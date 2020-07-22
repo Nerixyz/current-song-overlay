@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "CurrentSong",
+  "version": "0.1.3",
+
+  "description": "Implements a client to send the current active tab to a local server",
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "tabs"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{02914143-ede8-492c-8ad4-8a3af03f75bb}",
+      "strict_min_version": "78.0"
+    }
+  }
+}

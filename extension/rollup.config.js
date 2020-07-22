@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
+import copy from 'rollup-plugin-copy'
 
 export default [
   ['src/background.ts', 'dist/build/background.js'],
@@ -8,5 +9,7 @@ export default [
     file: output,
     format: 'iife',
   },
-  plugins: [typescript({ tsconfig: 'tsconfig.json' })],
+  plugins: [typescript({ tsconfig: 'tsconfig.json' }), copy({
+    targets: [{src: 'manifest.json', dest: 'dist/build'}]
+  })],
 }));

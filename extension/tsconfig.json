@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "module": "ESNext",
-    "target": "ESNext",
-    "lib": ["DOM", "ESNext"]
+    "target": "ES2019",
+    "lib": ["DOM", "ESNext"],
+    "inlineSourceMap": true,
+    "inlineSources": true
   },
   "exclude": [
     "node_modules"
