@@ -52,13 +52,15 @@ export class TabChangeHandler {
   protected findAndUpdateNext() {
     let audible = this.currentAudible.filter(x => x.audible && this.options.onlyInactive ? (!x.active || x.windowId !== this.activeWindowId) : true);
     if (!audible.length && this.currentlySent) {
-      this.currentlySent = undefined;
       this.emitInactive();
     } else if(audible.length === 1 && this.currentlySent?.title !== audible[0].title) {
       this.currentlySent = {...audible[0]};
       this.emitActive(audible[0].title);
     } else {
-      audible = audible.filter(x => x && !x.active);
+      audible = audible.filter(x => !x.active);
+      if(!audible.length){
+        return this.currentlySent && this.emitInactive(); // TODO: why?
+      }
       // at least one element (one active tab, but before we had >1)
       if(this.currentlySent?.title !== audible[0].title) {
         this.currentlySent = {...audible[0]};
@@ -72,6 +74,7 @@ export class TabChangeHandler {
   }
 
   protected emitInactive() {
+    this.currentlySent = undefined;
     this.onUpdate({ type: 'Inactive', data: {} });
   }
 }
