@@ -21,3 +21,12 @@ export interface NormalizedTrack {
     albumImageUrl?: string;
     albumName?: string;
 }
+
+export type UpdateBrowserEventFn = (e: UpdateBrowserEventArg<keyof UpdateBrowserEventMap>) => void;
+
+export type UpdateBrowserEventArg<T extends keyof UpdateBrowserEventMap> = { type: T; data: UpdateBrowserEventMap[T] };
+
+export interface UpdateBrowserEventMap {
+    Active: { title: string };
+    Inactive: {};
+}

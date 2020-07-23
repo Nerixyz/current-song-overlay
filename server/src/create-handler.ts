@@ -1,13 +1,13 @@
 import {ClientServer} from './ClientServer.ts';
 import {WsServer} from './WsServer.ts';
-import {UpdateEventArg, UpdateEventMap} from '../../extension/src/types.ts';
 import {Reloadable, splitTitle, readCookieEnvVar} from './utilities.ts';
 import {SpotifyClient} from './spotify/spotify-client.ts';
 import {VlcClient} from './vlc/vlc-client.ts';
 import pogo from 'https://deno.land/x/pogo/main.ts';
+import {UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
 
 export function createBrowserHandler(client: ClientServer, browserId: number): Reloadable {
-    const browserServer = new WsServer<UpdateEventArg<keyof UpdateEventMap>>(232, false);
+    const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
     browserServer.onMessage = event => {
         if (event.type === 'Active') {
             client.send({
