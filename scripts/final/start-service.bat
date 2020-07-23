@@ -1,2 +1,2 @@
 @echo off
-%~dp0%\nssm.exe start CurrentSong
+%~dp0\nssm.exe start CurrentSong
