@@ -72,6 +72,7 @@ Now the extension is loaded. Keep in mind: Each time you open Chrome, you'll get
 - [x] Add Script (bat, ps1, sh) Files
 - [ ] Add sh Scripts
 - [ ] Import cookies from Spotify using extension (copy or auto? security?)
+- [ ] Show player position
 
 # Developing
 
