@@ -6,12 +6,12 @@ export class TabChangeHandler {
   currentAudible: Tab[] = [];
   currentlySent?: Tab;
 
-  constructor(protected options: { onlyInactive: boolean } = { onlyInactive: true }) {}
+  constructor(protected options: { onlyInactive: boolean } = { onlyInactive: true }, protected activeWindowId: number) {}
 
   public onUpdate?: UpdateEventFn;
 
   handleFocus(tabId: number, previous: number | undefined, tab: Tab) {
-    this.currentAudible.forEach(x => x.id !== tabId ? x.active = false : x.active = true);
+    this.currentAudible.forEach(x => x.id !== tabId && x.windowId === tab.windowId ? x.active = false : x.active = true);
     if (tab.audible && !this.currentAudible.some(x => x.id === tabId)) {
       this.currentAudible.push(tab);
     } else if (!tab.audible) {
@@ -44,8 +44,13 @@ export class TabChangeHandler {
     this.findAndUpdateNext();
   }
 
+  handleWindowFocus(windowId: number) {
+    this.activeWindowId = windowId;
+    this.findAndUpdateNext();
+  }
+
   protected findAndUpdateNext() {
-    let audible = this.currentAudible.filter(x => x.audible && (!this.options.onlyInactive || !x.active));
+    let audible = this.currentAudible.filter(x => x.audible && this.options.onlyInactive ? (!x.active || x.windowId !== this.activeWindowId) : true);
     if (!audible.length && this.currentlySent) {
       this.currentlySent = undefined;
       this.emitInactive();
@@ -53,9 +58,9 @@ export class TabChangeHandler {
       this.currentlySent = {...audible[0]};
       this.emitActive(audible[0].title);
     } else {
-      audible = audible.filter(x => !x.active);
+      audible = audible.filter(x => x && !x.active);
       // at least one element (one active tab, but before we had >1)
-      if(this.currentlySent?.title !== audible[0]?.title) {
+      if(this.currentlySent?.title !== audible[0].title) {
         this.currentlySent = {...audible[0]};
         this.emitActive(audible[0].title);
       }

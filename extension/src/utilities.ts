@@ -2,8 +2,8 @@ export function cleanupTabName(name: string) {
   return name.replace(/(^\([^ ]+\))|(- \w+$)/g, '').trim();
 }
 
-export function connectWithReconnect(url: string): {value?: WebSocket} {
-  const obj: {value?: WebSocket} = {value: undefined};
+export function connectWithReconnect(url: string): { value?: WebSocket } {
+  const obj: { value?: WebSocket } = { value: undefined };
   let factor = 0;
   const updateFactor = () => factor = Math.min(factor + 5, 120);
   const resetFactor = () => factor = 0;
@@ -18,12 +18,12 @@ export function connectWithReconnect(url: string): {value?: WebSocket} {
       obj.value.addEventListener('open', () => {
         console.log('connected to', url);
         resetFactor();
-      })
-    }catch(e) {
+      });
+    } catch (e) {
       console.error(e);
       reset();
     }
-  }
+  };
   const reset = () => {
     console.log(`reset in ${factor}s`);
     obj.value = undefined;
@@ -36,15 +36,19 @@ export function connectWithReconnect(url: string): {value?: WebSocket} {
 }
 
 export function fixChrome() {
-  if(!globalThis.browser) {
+  if (!globalThis.browser) {
     // @ts-ignore -- fix for chrome
     globalThis.browser = chrome;
   }
-  if(browser.tabs.get.length === 0) {
-    const initialGet = browser.tabs.get;
-    browser.tabs.get = tabId => new Promise(resolve => {
-      // @ts-ignore -- chrome i guess
-      initialGet(tabId, resolve);
-    })
+  tryPromisify(browser.tabs, 'get');
+  tryPromisify(browser.windows, 'getCurrent');
+}
+
+function tryPromisify<K extends string, T extends { [x in K]: (arg: unknown) => Promise<unknown> }>(obj: T, key: K) {
+  if (obj[key].length === 0) {
+    // assume this is chrome
+    const base = obj[key];
+    // @ts-ignore -- wrong types or something, this is fine
+    obj[key] = arg1 => new Promise(resolve => base(arg1, resolve));
   }
 }
