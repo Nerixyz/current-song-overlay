@@ -14,7 +14,7 @@ New-Item "build\extension" -Type Directory  | Out-Null;
 # Add the server code to the build dir
 Write-Debug "Adding server code";
 
-Copy-Item "server\src\*" "build\server" | Out-Null;
+Copy-Item "server\src\*" "build\server" -Recurse | Out-Null;
 
 # Add deno to the build dir
 Write-Debug "Adding deno executable";
@@ -31,7 +31,7 @@ npm run build > $null;
 Set-Location .. | Out-Null;
 
 Write-Debug "Adding overlay";
-Copy-Item "client\public\*" "build\overlay" | Out-Null;
+Copy-Item "client\public\*" "build\overlay" -Recurse | Out-Null;
 
 # Build the extension
 Write-Debug "Bundling extension";
@@ -42,7 +42,7 @@ npm run build > $null;
 Set-Location .. | Out-Null;
 
 Write-Debug "Adding extension";
-Copy-Item "extension\dist\build\*" "build\extension" | Out-Null;
+Copy-Item "extension\dist\build\*" "build\extension" -Recurse | Out-Null;
 
 # Copy the env-vars
 Write-Debug "Adding env vars";
@@ -54,7 +54,7 @@ Copy-Item "README.md" "build\README.md" | Out-Null;
 # Copy scripts
 Write-Debug "Adding scripts";
 
-Copy-Item "scripts\final\*" "build" | Out-Null;
+Copy-Item "scripts\final\*" "build" -Recurse | Out-Null;
 
 Write-Output "Copied";
 
