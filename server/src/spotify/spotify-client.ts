@@ -14,7 +14,8 @@ export class SpotifyClient {
 
     ws?: WebSocket;
 
-    constructor(private cookies: string) {}
+    constructor(private cookies: string) {
+    }
 
     async connect() {
         this.accessToken = await this.getAccessToken();
@@ -63,6 +64,15 @@ export class SpotifyClient {
                         next: next ? normalizeTrack(next) : undefined,
                         previous: prev ? normalizeTrack(prev) : undefined,
                         state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
+                        willHavePos: true,
+                    }
+                };
+                yield {
+                    type: 'PositionChanged', data: {
+                        currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
+                        playbackSpeed: cluster.player_state.playback_speed,
+                        maxPositionSec: Number(cluster.player_state.duration) / 1000,
+                        startTs: Number(cluster.timestamp),
                     }
                 };
             }
@@ -84,14 +94,17 @@ export class SpotifyClient {
     }
 
     protected pingId?: number;
+
     startPing() {
         setInterval(() => this.ws?.send(JSON.stringify({type: 'ping'})), 60 * 1000);
     }
+
     stopPing() {
         clearInterval(this.pingId);
     }
 
     stopped = false;
+
     public async stop(): Promise<void> {
         this.stopped = true;
         this.stopPing();

@@ -5,6 +5,7 @@ export type OverlayClientEvent<T extends keyof OverlayClientEventMap> = {
 
 export interface OverlayClientEventMap {
     StateChanged: OverlayClientStateChangedEvent;
+    PositionChanged: OverlayPositionChangedEvent;
     Ready: undefined;
 }
 
@@ -13,6 +14,14 @@ export interface OverlayClientStateChangedEvent {
     previous?: NormalizedTrack;
     next?: NormalizedTrack;
     state: 'playing' | 'paused' | 'unknown';
+    willHavePos?: boolean;
+}
+
+export interface OverlayPositionChangedEvent {
+    playbackSpeed: number;
+    currentPositionSec: number;
+    maxPositionSec: number;
+    startTs: number;
 }
 
 export interface NormalizedTrack {
