@@ -17,6 +17,7 @@ body {
     box-shadow: 0 2px var(--card-shadow-blur) 0 var(--card-shadow);
     margin: var(--card-margin);
     position: absolute;
+    overflow: hidden;
 }
 
 #song-info {
@@ -51,4 +52,14 @@ body {
 
 .display-none {
     display: none;
+}
+
+#progress-bar {
+    left: 0;
+    bottom: 0;
+    height: 5px;
+    width: 100%;
+    background-color: var(--progress-bar-color);
+    position: absolute;
+    transform-origin: left;
 }
