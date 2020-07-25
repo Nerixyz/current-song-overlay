@@ -101,7 +101,6 @@ Now the extension is loaded. **Keep in mind**: Each time you open Chrome, you'll
 * **Client (Overlay)**
 ~~Run `npm i` or `yarn` and run the script `dev`. It will automagically rebuild.
 You can (most of the time) access the overlay on `localhost:5000`.~~
-
 You can use the server's functionality of hosting the overlay.
  Define the `NON_BUILD_ENV` environment variable (the value doesn't matter, use e.g. 1) and run the server.
 
