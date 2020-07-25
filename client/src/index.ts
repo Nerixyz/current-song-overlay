@@ -35,7 +35,6 @@ function makeOnWsMessage() {
             progressAnimation.stop();
             break;
           }
-          console.log(data);
           updateClasses(progressBar, [], ['display-none']);
           progressAnimation.start({
             maxSec: position.maxPositionSec,
