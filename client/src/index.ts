@@ -29,25 +29,25 @@ function makeOnWsMessage() {
         } else {
           updateClasses(wrapper, ['hidden'], ['shown']);
         }
-        updateClasses(progressBar, ['display-none']);
-        if (!data.willHavePos) progressAnimation.stop();
-        break;
-      }
-      case 'PositionChanged': {
-        const data = event.data as PositionChangedEvent;
-        if (data.playbackSpeed === 0) {
+        if (data.position) {
+          const position = data.position;
+          if (position.playbackSpeed === 0) {
+            progressAnimation.stop();
+            break;
+          }
+          console.log(data);
+          updateClasses(progressBar, [], ['display-none']);
+          progressAnimation.start({
+            maxSec: position.maxPositionSec,
+            startSec: position.currentPositionSec,
+            speed: position.playbackSpeed,
+            startTs: position.startTs,
+            fn: percent => setTransform(progressBar, `scaleX(${percent})`),
+          });
+        } else {
+          updateClasses(progressBar, ['display-none']);
           progressAnimation.stop();
-          break;
         }
-        console.log(data);
-        updateClasses(progressBar, [], ['display-none']);
-        progressAnimation.start({
-          maxSec: data.maxPositionSec,
-          startSec: data.currentPositionSec,
-          speed: data.playbackSpeed,
-          startTs: data.startTs,
-          fn: percent => setTransform(progressBar, `scaleX(${percent})`),
-        });
         break;
       }
       default: {
@@ -68,7 +68,6 @@ type WsMessage<T extends keyof WsMessageMap> = {
 
 interface WsMessageMap {
   StateChanged: StateChangedEvent;
-  PositionChanged: PositionChangedEvent;
 }
 
 export interface StateChangedEvent {
@@ -76,7 +75,7 @@ export interface StateChangedEvent {
   previous?: NormalizedTrack;
   next?: NormalizedTrack;
   state: 'playing' | 'paused' | 'unknown';
-  willHavePos?: boolean;
+  position?: PositionChangedEvent;
 }
 
 export interface PositionChangedEvent {

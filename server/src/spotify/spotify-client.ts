@@ -64,15 +64,12 @@ export class SpotifyClient {
                         next: next ? normalizeTrack(next) : undefined,
                         previous: prev ? normalizeTrack(prev) : undefined,
                         state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
-                        willHavePos: true,
-                    }
-                };
-                yield {
-                    type: 'PositionChanged', data: {
-                        currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
-                        playbackSpeed: cluster.player_state.playback_speed,
-                        maxPositionSec: Number(cluster.player_state.duration) / 1000,
-                        startTs: Number(cluster.timestamp),
+                        position: {
+                            currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
+                            playbackSpeed: cluster.player_state.playback_speed,
+                            maxPositionSec: Number(cluster.player_state.duration) / 1000,
+                            startTs: Number(cluster.timestamp),
+                        }
                     }
                 };
             }

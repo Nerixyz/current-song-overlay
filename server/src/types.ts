@@ -14,7 +14,7 @@ export interface OverlayClientStateChangedEvent {
     previous?: NormalizedTrack;
     next?: NormalizedTrack;
     state: 'playing' | 'paused' | 'unknown';
-    willHavePos?: boolean;
+    position?: OverlayPositionChangedEvent;
 }
 
 export interface OverlayPositionChangedEvent {
