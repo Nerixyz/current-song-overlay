@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c -m && web-ext build -s dist/build -a dist",
+    "build": "rollup -c -m && web-ext build -s dist/build -o -a dist",
     "rollup-watch": "rollup -c -m -w",
     "web-ext-watch": "web-ext run -s dist/build --firefox=nightly",
     "watch": "npm-run-all --parallel rollup-watch web-ext-watch",
