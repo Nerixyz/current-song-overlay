@@ -1,8 +1,8 @@
 import {createReloader, readEnableEnvVar} from './utilities.ts';
-import {ClientServer} from './ClientServer.ts';
+import {OverlayServer} from './OverlayServer.ts';
 import {createBrowserHandler, createServer, createSpotifyClientAndHandler, createVlcClient} from './create-handler.ts';
 
-const clientServer = new ClientServer(231);
+const clientServer = new OverlayServer(231);
 
 const reloader = createReloader();
 const promises = [clientServer.start()];

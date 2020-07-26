@@ -1,6 +1,6 @@
 import {APP_VERSION, USER_AGENT} from './constants.ts';
-import {SpotifyHttpApi} from './spotify-http-api.ts';
-import {SpotifyCache} from './spotify-cache.ts';
+import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
+import {SpotifyCache} from './SpotifyCache.ts';
 import {connectWebSocket, WebSocket} from 'https://deno.land/std/ws/mod.ts';
 import {SpotifyWsMessage} from './ws.types.ts';
 import {getId} from './utilities.ts';

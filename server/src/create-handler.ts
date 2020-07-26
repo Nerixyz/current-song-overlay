@@ -1,12 +1,12 @@
-import {ClientServer} from './ClientServer.ts';
+import {OverlayServer} from './OverlayServer.ts';
 import {WsServer} from './WsServer.ts';
 import {Reloadable, splitTitle, readCookieEnvVar} from './utilities.ts';
-import {SpotifyClient} from './spotify/spotify-client.ts';
-import {VlcClient} from './vlc/vlc-client.ts';
+import {SpotifyClient} from './spotify/SpotifyClient.ts';
+import {VlcClient} from './vlc/VlcClient.ts';
 import pogo from 'https://deno.land/x/pogo/main.ts';
 import {UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
 
-export function createBrowserHandler(client: ClientServer, browserId: number): Reloadable {
+export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
     const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
     browserServer.onMessage = event => {
         if (event.type === 'Active') {
@@ -29,7 +29,7 @@ export function createBrowserHandler(client: ClientServer, browserId: number): R
     return browserServer;
 }
 
-export function createSpotifyClientAndHandler(overlayClient: ClientServer, spotifyId: number): Reloadable {
+export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spotifyId: number): Reloadable {
     const spotifyClient = new SpotifyClient(readCookieEnvVar());
     const spotifyHandler = (() => {
         let die = false;
@@ -55,7 +55,7 @@ export function createSpotifyClientAndHandler(overlayClient: ClientServer, spoti
     };
 }
 
-export function createVlcClient(overlayClient: ClientServer, vlcId: number): Reloadable {
+export function createVlcClient(overlayClient: OverlayServer, vlcId: number): Reloadable {
     const vlcClient = new VlcClient('localhost:234');
     vlcClient.onMessage = msg => {
         overlayClient.send({

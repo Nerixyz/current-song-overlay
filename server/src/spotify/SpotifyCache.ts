@@ -1,4 +1,4 @@
-import {SpotifyHttpApi} from './spotify-http-api.ts';
+import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
 import {SpotifyTrack} from './http.types.ts';
 
 export class SpotifyCache {

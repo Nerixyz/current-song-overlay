@@ -1,7 +1,7 @@
 import {WsServer} from './WsServer.ts';
 import {OverlayClientEvent, OverlayClientEventMap, OverlayClientStateChangedEvent} from './types.ts';
 
-export class ClientServer extends WsServer<OverlayClientEvent<keyof OverlayClientEventMap>> {
+export class OverlayServer extends WsServer<OverlayClientEvent<keyof OverlayClientEventMap>> {
 
     protected channelIdx = 0;
     protected channelStatuses: OverlayClientStateChangedEvent[] = [];
