@@ -11,7 +11,7 @@ export class VlcClient {
 
     async start() {
         this.conn = await Deno.connect({
-            port: Number(this.address.split(':')[1] ?? '8000'),
+            port: Number(this.address.split(':')[1] ?? '234'),
             hostname: this.address.split(':')[0],
         });
         this.initPollLoop();
