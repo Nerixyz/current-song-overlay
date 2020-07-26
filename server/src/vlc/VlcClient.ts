@@ -32,6 +32,8 @@ export class VlcClient {
                 }
             }
         }
+        this.lastState = 'stopped';
+        this.emit();
         this.stopPolling();
     }
 
