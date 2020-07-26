@@ -82,6 +82,8 @@ export interface SpotifyWsTrackMetadata extends SpotifyWsSimpleMetadata {
     iteration: string;
     track_player: string;
     image_large_url: string;
+    title?: string;
+    artist?: string;
 }
 
 export interface SpotifyWsSimpleTrack {

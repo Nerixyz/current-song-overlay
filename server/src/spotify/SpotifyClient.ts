@@ -60,7 +60,7 @@ export class SpotifyClient {
                 ]);
                 yield {
                     type: 'StateChanged', data: {
-                        current: current ? normalizeTrack(current) : undefined,
+                        current: current ? normalizeTrack(current) : {name: cluster.player_state.track.metadata.title ?? '<doctorWtf>'},
                         next: next ? normalizeTrack(next) : undefined,
                         previous: prev ? normalizeTrack(prev) : undefined,
                         state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
