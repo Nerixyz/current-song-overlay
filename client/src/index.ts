@@ -1,14 +1,18 @@
 import { connectWithReconnect } from './utilities';
 import { ProgressBarAnimation } from './progress-bar-animation';
+import { SmolDom } from './SmolDom';
+import { MySmolDom, PositionChangedEvent, StateChangedEvent, WsMessage, WsMessageMap } from './types';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const obj = connectWithReconnect('ws://localhost:231', makeOnWsMessage());
-});
+document.addEventListener('DOMContentLoaded', () => connectWithReconnect('ws://localhost:231', makeOnWsMessage()));
 
 function makeOnWsMessage() {
-  const [titleElement, artistElement, albumArtElement, wrapper, progressBar] = getElementsById<{ 2: HTMLImageElement }>(
-    ['song-title', 'song-artist', 'song-cover', 'current-song', 'progress-bar']
-  );
+  const dom = new SmolDom<MySmolDom>({
+    title: 'song-title',
+    artist: 'song-artist',
+    albumArt: 'song-cover',
+    wrapper: 'current-song',
+    progressBar: 'progress-bar',
+  }).lookup();
   const progressAnimation = new ProgressBarAnimation();
   return function onWsMessage(message: MessageEvent) {
     if (typeof message.data !== 'string') {
@@ -20,31 +24,11 @@ function makeOnWsMessage() {
     switch (event.type) {
       case 'StateChanged': {
         const data = event.data as StateChangedEvent;
-        if (data.state === 'playing' && data.current) {
-          titleElement.textContent = data.current.name ?? null;
-          artistElement.textContent = data.current.artists?.join(', ') ?? null;
-          albumArtElement.src = data.current.albumImageUrl ?? '';
-          setConditionalClass(albumArtElement, !data.current.albumImageUrl, 'display-none');
-          updateClasses(wrapper, ['shown'], ['hidden']);
-        } else {
-          updateClasses(wrapper, ['hidden'], ['shown']);
-        }
+        handleStateChanged(data, dom);
         if (data.position) {
-          const position = data.position;
-          if (position.playbackSpeed === 0) {
-            progressAnimation.stop();
-            break;
-          }
-          updateClasses(progressBar, [], ['display-none']);
-          progressAnimation.start({
-            maxSec: position.maxPositionSec,
-            startSec: position.currentPositionSec,
-            speed: position.playbackSpeed,
-            startTs: position.startTs,
-            fn: percent => setTransform(progressBar, `scaleX(${percent})`),
-          });
+          handlePositionChanged(data.position, dom, progressAnimation);
         } else {
-          updateClasses(progressBar, ['display-none']);
+          dom.addClass('display-none', 'progressBar');
           progressAnimation.stop();
         }
         break;
@@ -56,52 +40,37 @@ function makeOnWsMessage() {
   };
 }
 
-function getElementsById<T extends { [x: number]: HTMLElement }>(ids: string[]): HTMLElement[] & T {
-  return ids.map(id => document.getElementById(id)) as HTMLElement[] & T;
-}
-
-type WsMessage<T extends keyof WsMessageMap> = {
-  type: T;
-  data: WsMessageMap[T];
-};
-
-interface WsMessageMap {
-  StateChanged: StateChangedEvent;
-}
-
-export interface StateChangedEvent {
-  current?: NormalizedTrack;
-  previous?: NormalizedTrack;
-  next?: NormalizedTrack;
-  state: 'playing' | 'paused' | 'unknown';
-  position?: PositionChangedEvent;
-}
-
-export interface PositionChangedEvent {
-  playbackSpeed: number;
-  currentPositionSec: number;
-  maxPositionSec: number;
-  startTs: number;
-}
-
-export interface NormalizedTrack {
-  name: string;
-  artists: string[];
-  albumImageUrl: string;
-  albumName: string;
-}
-
-function updateClasses(el: HTMLElement, add: string[] = [], remove: string[] = []) {
-  el.classList.add(...add);
-  el.classList.remove(...remove);
-}
-
-function setConditionalClass(el: HTMLElement, condition: boolean, ...classes: string[]) {
-  if (condition) {
-    el.classList.add(...classes);
+function handleStateChanged(event: StateChangedEvent, dom: SmolDom<MySmolDom>) {
+  if (event.state === 'playing' && event.current) {
+    dom
+      .text({
+        title: event.current.name ?? null,
+        artist: event.current.artists?.join(', ') ?? null,
+      })
+      .prop<HTMLImageElement>('src', {
+        albumArt: event.current.albumImageUrl ?? '',
+      })
+      .conditionalClass('display-none', !event.current.albumImageUrl, 'albumArt')
+      .addClass('shown', 'wrapper')
+      .removeClass('hidden', 'wrapper');
   } else {
-    el.classList.remove(...classes);
+    dom.removeClass('shown', 'wrapper').addClass('hidden', 'wrapper');
   }
+}
+
+function handlePositionChanged(event: PositionChangedEvent, dom: SmolDom<MySmolDom>, progressAnimation: ProgressBarAnimation) {
+  if (event.playbackSpeed === 0) {
+    progressAnimation.stop();
+    return;
+  }
+  dom.removeClass('display-none', 'progressBar');
+  progressAnimation.start({
+    maxSec: event.maxPositionSec,
+    startSec: event.currentPositionSec,
+    speed: event.playbackSpeed,
+    startTs: event.startTs,
+    fn: percent => setTransform(dom.getElement('progressBar'), `scaleX(${percent})`),
+  });
 }
 
 function setTransform(el: HTMLElement, transform: string) {

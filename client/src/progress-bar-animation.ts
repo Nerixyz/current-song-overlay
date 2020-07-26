@@ -20,11 +20,13 @@ export class ProgressBarAnimation {
       return;
     }
 
-    const delta = Date.now() - this.data.startTs;
+    if(this.data) {
+      const delta = Date.now() - this.data.startTs;
 
-    const timeSec = delta / 1000.0 * this.data.speed;
-    const actualSongTime = this.data.startSec + timeSec;
-    this.data.fn(Math.min(actualSongTime / this.data.maxSec, 1));
+      const timeSec = delta / 1000.0 * this.data.speed;
+      const actualSongTime = this.data.startSec + timeSec;
+      this.data.fn(Math.min(actualSongTime / this.data.maxSec, 1));
+    }
 
     requestAnimationFrame(() => this.onFrame());
   }
