@@ -5,7 +5,6 @@ export type OverlayClientEvent<T extends keyof OverlayClientEventMap> = {
 
 export interface OverlayClientEventMap {
     StateChanged: OverlayClientStateChangedEvent;
-    PositionChanged: OverlayPositionChangedEvent;
     Ready: undefined;
 }
 
