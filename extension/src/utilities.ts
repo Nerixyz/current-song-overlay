@@ -44,7 +44,7 @@ export function fixChrome() {
   tryPromisify(browser.windows, 'getCurrent');
 }
 
-function tryPromisify<K extends string, T extends { [x in K]: (arg: unknown) => Promise<unknown> }>(obj: T, key: K) {
+function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Promise<any> }>(obj: T, key: K) {
   if (obj[key].length === 0) {
     // assume this is chrome
     const base = obj[key];

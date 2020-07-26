@@ -9,8 +9,8 @@ fixChrome();
   const currentWindow = await browser.windows.getCurrent();
   const handler = new TabChangeHandler({onlyInactive: true}, currentWindow?.id ?? -1);
   browser.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
-    if ('audible' in changeInfo) handler.handleAudible(tabId, changeInfo.audible, await browser.tabs.get(tabId));
-    else if ('title' in changeInfo) handler.handleTitle(tabId, changeInfo.title);
+    if (typeof changeInfo.audible === 'boolean') handler.handleAudible(tabId, changeInfo.audible, await browser.tabs.get(tabId));
+    else if (typeof changeInfo.title === 'string') handler.handleTitle(tabId, changeInfo.title);
   });
   browser.tabs.onActivated.addListener(async activeInfo =>
     handler.handleFocus(activeInfo.tabId, activeInfo.previousTabId, await browser.tabs.get(activeInfo.tabId))

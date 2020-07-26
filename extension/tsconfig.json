@@ -4,7 +4,12 @@
     "target": "ES2019",
     "lib": ["DOM", "ESNext"],
     "inlineSourceMap": true,
-    "inlineSources": true
+    "inlineSources": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true
   },
   "exclude": [
     "node_modules"
