@@ -3,7 +3,12 @@
     "module": "ES2020",
     "target": "ES2018",
     "lib": ["ESNext","DOM"],
-    "sourceMap": true
+    "sourceMap": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "alwaysStrict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true
   },
   "exclude": [
     "node_modules"

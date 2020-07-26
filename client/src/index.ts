@@ -20,10 +20,10 @@ function makeOnWsMessage() {
     switch (event.type) {
       case 'StateChanged': {
         const data = event.data as StateChangedEvent;
-        if (data.state === 'playing') {
-          titleElement.textContent = data.current.name;
-          artistElement.textContent = data.current.artists?.join(', ');
-          albumArtElement.src = data.current.albumImageUrl;
+        if (data.state === 'playing' && data.current) {
+          titleElement.textContent = data.current.name ?? null;
+          artistElement.textContent = data.current.artists?.join(', ') ?? null;
+          albumArtElement.src = data.current.albumImageUrl ?? '';
           setConditionalClass(albumArtElement, !data.current.albumImageUrl, 'display-none');
           updateClasses(wrapper, ['shown'], ['hidden']);
         } else {
