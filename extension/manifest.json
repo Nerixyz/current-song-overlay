@@ -1,13 +1,19 @@
 {
   "manifest_version": 2,
   "name": "CurrentSong",
-  "version": "0.1.4",
+  "version": "0.2.0",
 
   "description": "Implements a client to send the current active tab to a local server",
 
   "background": {
     "scripts": ["background.js"]
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["trackVideoProgress.js"]
+    }
+  ],
   "permissions": [
     "tabs"
   ],

@@ -3,6 +3,7 @@ import copy from 'rollup-plugin-copy'
 
 export default [
   ['src/background.ts', 'dist/build/background.js'],
+  ['src/trackVideoProgress.ts', 'dist/build/trackVideoProgress.js'],
 ].map(([input, output]) => ({
   input,
   output: {

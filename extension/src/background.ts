@@ -1,6 +1,6 @@
 import { TabChangeHandler } from './TabChangeHandler';
 import { connectWithReconnect, fixChrome } from './utilities';
-import { UpdateEventArg, UpdateEventMap } from './types';
+import { UpdateEventArg, UpdateEventMap, VideoPlayState } from './types';
 
 fixChrome();
 
@@ -19,7 +19,17 @@ fixChrome();
 
   browser.windows.onFocusChanged.addListener(windowId => handler.handleWindowFocus(windowId));
 
+  browser.runtime.onMessage.addListener((message: VideoPlayState, sender) => {
+    handler.handlePlayState(sender.tab?.id ?? -1, {
+      state: message,
+      tabId: sender.tab?.id ?? -1,
+    }, sender.tab!);
+  });
+
   const wsRef = connectWithReconnect('ws://localhost:232');
-  handler.onUpdate = (e: UpdateEventArg<keyof UpdateEventMap>) => wsRef.value?.send(JSON.stringify(e));
+  handler.onUpdate = (e: UpdateEventArg<keyof UpdateEventMap>) => {
+    console.log(e);
+    wsRef.value?.send(JSON.stringify(e));
+  };
 
 })();
