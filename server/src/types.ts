@@ -35,6 +35,20 @@ export type UpdateBrowserEventFn = (e: UpdateBrowserEventArg<keyof UpdateBrowser
 export type UpdateBrowserEventArg<T extends keyof UpdateBrowserEventMap> = { type: T; data: UpdateBrowserEventMap[T] };
 
 export interface UpdateBrowserEventMap {
-    Active: { title: string };
+    Active: BrowserActiveEvent ;
     Inactive: {};
 }
+
+export interface BrowserActiveEvent {
+    title: string;
+    state?: BrowserVideoPlayState;
+}
+
+export interface BrowserVideoPlayState {
+    speed: number;
+    mode: 'playing' | 'paused';
+    sentTs: number;
+    duration: number;
+    currentPos: number;
+}
+

@@ -4,17 +4,24 @@ import {Reloadable, splitTitle, readCookieEnvVar} from './utilities.ts';
 import {SpotifyClient} from './spotify/SpotifyClient.ts';
 import {VlcClient} from './vlc/VlcClient.ts';
 import pogo from 'https://deno.land/x/pogo/main.ts';
-import {UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
+import {BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
 
 export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
     const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
     browserServer.onMessage = event => {
         if (event.type === 'Active') {
+            const data = event.data as BrowserActiveEvent;
             client.send({
                 type: 'StateChanged',
                 data: {
                     state: 'playing',
-                    current: splitTitle((event.data as { title: string }).title),
+                    current: splitTitle(data.title),
+                    position: data.state && data.state.mode === 'playing' ? {
+                        startTs: data.state.sentTs,
+                        maxPositionSec: data.state.duration,
+                        playbackSpeed: data.state.speed,
+                        currentPositionSec: data.state.currentPos,
+                    } : undefined,
                 }
             }, browserId);
         } else if (event.type === 'Inactive') {
