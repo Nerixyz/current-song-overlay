@@ -52,7 +52,7 @@ function handleStateChanged(event: StateChangedEvent, dom: SmolDom<MySmolDom>) {
       })
       .conditionalClass('display-none', !event.current.albumImageUrl, 'albumArt')
       .addClass('shown', 'wrapper')
-      .removeClass('hidden', 'wrapper');
+      .removeClass('hidden', 'wrapper').getElement('wrapper').style.height = event.current.albumImageUrl ? '4.4em' : '';
   } else {
     dom.removeClass('shown', 'wrapper').addClass('hidden', 'wrapper');
   }

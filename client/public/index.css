@@ -18,14 +18,13 @@ body {
     margin: var(--card-margin);
     position: absolute;
     overflow: hidden;
-    height: 4.4em;
     align-items: center;
 }
 
 #song-info {
     display: flex;
     flex-direction: column;
-    margin: 0.5em 1em 0.8em 0.5em;
+    margin: 0.5em 0.8em 0.8em 0.6em;
 }
 
 #song-title {
