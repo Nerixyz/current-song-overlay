@@ -53,16 +53,13 @@ export class SpotifyClient {
             for (const {cluster} of message.payloads) {
                 if (!cluster) continue;
 
-                const [prev, current, next] = await this.cache.getTracks([
-                    getId(cluster.player_state.prev_tracks?.[0]?.uri, 'track'),
-                    getId(cluster.player_state.track?.uri, 'track'),
-                    getId(cluster.player_state.next_tracks?.[0]?.uri, 'track')
-                ]);
+                const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
+                if(!current) {
+                    console.log(cluster.player_state.track.uri);
+                }
                 yield {
                     type: 'StateChanged', data: {
                         current: current ? normalizeTrack(current) : {name: cluster.player_state.track.metadata.title ?? '<doctorWtf>'},
-                        next: next ? normalizeTrack(next) : undefined,
-                        previous: prev ? normalizeTrack(prev) : undefined,
                         state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
                         position: {
                             currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,

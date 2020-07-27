@@ -8,7 +8,7 @@ export class SpotifyCache {
 
     constructor(protected http: SpotifyHttpApi,
                 protected readonly MAX_CACHE_SIZE = 100,
-                protected readonly CLEANUP_INTERVAL = 1000) {
+                protected readonly CLEANUP_INTERVAL = 10000) {
         this.cleanupRef = setInterval(() => {
             this.cleanupCache(this.tracks);
         }, this.CLEANUP_INTERVAL);
@@ -26,34 +26,24 @@ export class SpotifyCache {
         clearInterval(this.cleanupRef);
     }
 
-    public async getTracks(ids: Array<string | undefined>): Promise<Array<SpotifyTrack | undefined>> {
-        const resMapping: Record<number, number> = {};
-        const toRequest: string[] = [];
-        const finalArray: Array<SpotifyTrack | undefined> = new Array(ids.length);
-
-        let reqIdx = 0;
-        for(let idx = 0; idx < ids.length; idx++) {
-            const id = ids[idx];
-            if(!id){
-                finalArray[idx] = undefined;
-            } else if(this.tracks[id]) {
-                finalArray[idx] = this.tracks[id].value;
-            } else {
-                toRequest.push(id);
-                resMapping[reqIdx] = idx;
-                reqIdx++;
-            }
+    public async getTrack(id: string | undefined): Promise<SpotifyTrack | undefined> {
+        if(typeof id === 'undefined') return undefined;
+        const lookedUp = this.tracks[id];
+        if(lookedUp){
+            console.log('lookup OK', id);
+            return lookedUp.value;
         }
-        if(!toRequest.length) return finalArray;
 
-        const res = await this.http.trackInfos(toRequest);
-        if(!res.tracks) return finalArray;
-        for(let idx = 0; idx < res.tracks.length; idx++) {
-            const track = res.tracks[idx];
-            this.tracks[track.id] = {savedTs: Date.now(), value: track};
-            finalArray[resMapping[idx]] = track;
+        const res = await this.http.trackInfos([id]);
+        if(!res.tracks?.length) {
+            console.log('req FAIL', id);
+            return undefined;
         }
-        return finalArray;
+
+        this.tracks[res.tracks[0].id] = {savedTs: Date.now(), value: res.tracks[0]};
+
+        console.log('req OK', id);
+        return res.tracks[0];
     }
 }
 
