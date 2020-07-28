@@ -12,7 +12,9 @@ body {
     display: flex;
     background: var(--card-color);
     border-radius: var(--card-border-radius);
-    transition: transform var(--transition-duration), opacity var(--transition-duration);
+    transition:
+            transform var(--transition-duration),
+            opacity var(--transition-duration);
     transform-origin: var(--transition-origin);
     box-shadow: 0 2px var(--card-shadow-blur) 0 var(--card-shadow);
     margin: var(--card-margin);
@@ -21,10 +23,21 @@ body {
     align-items: center;
 }
 
+#current-song::after {
+    content: '';
+    height: calc(100% - 5px);
+    width: 1em;
+    position: absolute;
+    right: 0;
+    background: linear-gradient(to left, var(--card-color) 10%, transparent);
+}
+
 #song-info {
     display: flex;
     flex-direction: column;
     margin: 0.5em 0.8em 0.8em 0.6em;
+    white-space: nowrap;
+    max-width: var(--song-info-max-width);
 }
 
 #song-title {
@@ -58,7 +71,7 @@ body {
     bottom: 0;
     height: 5px;
     width: 100%;
-    background-color: var(--progress-bar-color);
+    background: var(--progress-bar-color);
     position: absolute;
     transform-origin: left;
 }
