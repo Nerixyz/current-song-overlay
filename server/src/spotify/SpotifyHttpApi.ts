@@ -1,4 +1,5 @@
 import {SpotifyTrackResponse} from './http.types.ts';
+import {USER_AGENT, APP_VERSION} from './constants.ts';
 
 export class SpotifyHttpApi {
 
@@ -11,8 +12,9 @@ export class SpotifyHttpApi {
     }
 
     protected connectionId?: string;
+    accessToken?: string;
 
-    constructor(protected accessToken: string) {
+    constructor(protected cookies: string) {
     }
 
 
@@ -25,6 +27,24 @@ export class SpotifyHttpApi {
     updateConnectionId(conn: string) {
         if (this.connectionId === conn) return;
         this.connectionId = conn;
+    }
+
+    async updateAccessToken(){
+        this.accessToken = await this.getAccessToken();
+    }
+
+    protected async getAccessToken(): Promise<string> {
+        const {accessToken} = await fetch('https://open.spotify.com/get_access_token?reason=transport&productType=web_player', {
+            headers: {
+                'User-Agent': USER_AGENT,
+                'spotify-app-version': APP_VERSION,
+                'app-platform': 'WebPlayer',
+                'Cookie': this.cookies,
+                'Referer': 'https://open.spotify.com/'
+            },
+            method: 'GET',
+        }).then(r => r.json());
+        return accessToken;
     }
 
     postDevice() {

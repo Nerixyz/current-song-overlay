@@ -4,14 +4,11 @@ import {SpotifyTrack} from './http.types.ts';
 export class SpotifyCache {
 
     protected tracks: Record<string, CacheEntry<SpotifyTrack>> = {};
-    protected cleanupRef: number;
 
     constructor(protected http: SpotifyHttpApi,
-                protected readonly MAX_CACHE_SIZE = 100,
-                protected readonly CLEANUP_INTERVAL = 10000) {
-        this.cleanupRef = setInterval(() => {
-            this.cleanupCache(this.tracks);
-        }, this.CLEANUP_INTERVAL);
+                protected readonly MAX_CACHE_SIZE = 10,
+                protected readonly MAX_RETRY_COUNT = 2,
+                ) {
     }
 
     protected cleanupCache(holder: Record<string, CacheEntry<unknown>>) {
@@ -22,28 +19,31 @@ export class SpotifyCache {
         }
     }
 
-    public stopCleanup() {
-        clearInterval(this.cleanupRef);
-    }
-
     public async getTrack(id: string | undefined): Promise<SpotifyTrack | undefined> {
         if(typeof id === 'undefined') return undefined;
         const lookedUp = this.tracks[id];
-        if(lookedUp){
-            console.log('lookup OK', id);
-            return lookedUp.value;
+        if(lookedUp) return lookedUp.value;
+
+        const res = await this.requestTrackWithRetry(id);
+        if(!res) return undefined;
+
+        this.tracks[res.id] = {savedTs: Date.now(), value: res};
+        queueMicrotask(() => this.cleanupCache(this.tracks));
+        return res;
+    }
+
+    protected async requestTrackWithRetry(id: string): Promise<SpotifyTrack | undefined> {
+        let i = 0;
+        while (i <= this.MAX_RETRY_COUNT) {
+            const res = await this.http.trackInfos([id]);
+            if(!res.tracks?.length) {
+                await this.http.updateAccessToken();
+            } else {
+                return res.tracks[0];
+            }
+            i++;
         }
-
-        const res = await this.http.trackInfos([id]);
-        if(!res.tracks?.length) {
-            console.log('req FAIL', id);
-            return undefined;
-        }
-
-        this.tracks[res.tracks[0].id] = {savedTs: Date.now(), value: res.tracks[0]};
-
-        console.log('req OK', id);
-        return res.tracks[0];
+        return undefined
     }
 }
 

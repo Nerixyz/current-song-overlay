@@ -8,7 +8,6 @@ import {SpotifyTrack} from './http.types.ts';
 import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap} from '../types.ts';
 
 export class SpotifyClient {
-    accessToken?: string;
     http?: SpotifyHttpApi;
     cache?: SpotifyCache;
 
@@ -18,12 +17,12 @@ export class SpotifyClient {
     }
 
     async connect() {
-        this.accessToken = await this.getAccessToken();
-        this.http = new SpotifyHttpApi(this.accessToken);
+        this.http = new SpotifyHttpApi(this.cookies);
         this.cache = new SpotifyCache(this.http);
+        await this.http.updateAccessToken();
 
         // TODO: URL
-        this.ws = await connectWebSocket(`wss://gew-dealer.spotify.com/?access_token=${encodeURIComponent(this.accessToken)}`,
+        this.ws = await connectWebSocket(`wss://gew-dealer.spotify.com/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
             new Headers({'Cookies': this.cookies})
         );
         console.debug('Connected to spotify WebSocket');
@@ -103,7 +102,6 @@ export class SpotifyClient {
         this.stopped = true;
         this.stopPing();
         await this.ws?.close();
-        this.cache?.stopCleanup();
     }
 }
 
