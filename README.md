@@ -5,14 +5,15 @@ This application allows users (probably streamers) to show the playing song
  a service, and you are good to go. Now with Spotify you can't do this, you'll have to manually go in your browser and get the cookie.
  Maybe I'll change that.
  
- **Disclaimer:** I don't really know much about extension development nor overlay development. These are by no means best practices.
+ **Disclaimer:** I don't really know much about extension development nor overlay development.
+  These are by no means best practices.
  
 # Currently supported:
  
  * Firefox, Chrome, new Safari (and other Browsers implementing the [WebExtensions API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs))
  * Spotify (requires a Cookie to work, any device is supported)
- * VLC (`CTRL + P` > [bottom left] `Show Settings: All` > `Interface` > `Main Interfaces` > `RC`> `Command input: "localhost:234"`)
-
+ * VLC (RC-Interface)
+ 
 # How to set it up
 
 This application consists of multiple "modules" you can toggle.
@@ -33,17 +34,19 @@ You don't have to restart the service. You only need to **reload** the overlay.
 
 ## Spotify
 
+1. Get the `sp_dc` cookie from `open.spotify.com` (see below for Chrome and Firefox)
+2.  Open the `.env` file in the current folder
+3.  Paste **the value** next to `SPOTIFY_COOKIES="sp_dc=`
+4.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
+5.  Set `ENABLE_SPOTIFY=true` (previously `...=false`)
+
 ### Chrome
   1.  Open `open.spotify.com` (and log in)
   2.  Open the Developer Tools (`CTRL + SHIFT + I` or `F12`)
-  3.  Navigate to the `Application Tab`
+  3.  Go to the `Application Tab`
   4.  In the left pane, in `Storage`, select `Cookies` and then `https://open.spotify.com`
   5.  In the table, search in the `Name` column for `sp_dc`
   6.  Copy the `Value` (**double-click** the cell and press `CTRL + C`)
-  7.  Open the `.env` file in this folder
-  8.  Paste the value after `SPOTIFY_COOKIES="sp_dc=`
-  9.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
- 10.  Set `ENABLE_SPOTIFY=true` (previously `...=false`)
 
 ### Firefox
   1.  Open `open.spotify.com` (and log in)
@@ -52,10 +55,7 @@ You don't have to restart the service. You only need to **reload** the overlay.
   4.  In the left pane, select `Cookies` and then `https://open.spotify.com`
   5.  In the table, search in the `Name` column for `sp_dc`
   6.  Copy the `Value` (**double-click** the cell and press `CTRL + C`)
-  7.  Open the `.env` file in this folder
-  8.  Paste the value after `SPOTIFY_COOKIES="sp_dc=`
-  9.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
- 10.  Set `ENABLE_SPOTIFY=true` (previously `...=false`)
+  
 
 ## Browser
 
