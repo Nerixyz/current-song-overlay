@@ -43,6 +43,7 @@ You don't have to restart the service. You only need to **reload** the overlay.
   7.  Open the `.env` file in this folder
   8.  Paste the value after `SPOTIFY_COOKIES="sp_dc=`
   9.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
+ 10.  Set `ENABLE_SPOTIFY=true` (previously `...=false`)
 
 ### Firefox
   1.  Open `open.spotify.com` (and log in)
@@ -53,7 +54,8 @@ You don't have to restart the service. You only need to **reload** the overlay.
   6.  Copy the `Value` (**double-click** the cell and press `CTRL + C`)
   7.  Open the `.env` file in this folder
   8.  Paste the value after `SPOTIFY_COOKIES="sp_dc=`
-   9.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
+  9.  The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
+ 10.  Set `ENABLE_SPOTIFY=true` (previously `...=false`)
 
 ## Browser
 
