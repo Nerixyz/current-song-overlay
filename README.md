@@ -4,9 +4,15 @@ This application allows users (probably streamers) to show the playing song
  without worrying too much about the setup. Ideally you'll install the extension, start 
  a service, and you are good to go. Now with Spotify you can't do this, you'll have to manually go in your browser and get the cookie.
  Maybe I'll change that.
- 
- **Disclaimer:** I don't really know much about extension development nor overlay development.
-  These are by no means best practices.
+  
+### Main Features
+
+* It's one of the first _true_ **realtime** clients for Spotify and YouTube (VLC does not provide a realtime API).
+The local server **does not** constantly poll Spotify and YouTube. 
+* Watch progress is shown for Spotify _and_ YouTube (others to come).
+* The server can be ran as a **Windows Service** so won't show up as a window and is started once the PC starts.
+* It always tries to show the last updated source so viewers  immediately know the song.
+* The overlay is _fully customizable_ through the `config.css` file in the `overlay` directory.
  
 # Currently supported:
  
@@ -80,6 +86,20 @@ Now the extension is loaded. **Keep in mind**: Each time you open Chrome, you'll
 4. Set the TCP Command Input to `localhost:234`
 5. Restart VLC
 
+# Examples 
+
+### YouTube Player
+
+![YouTube Player](images/default-youtube.png)
+
+### Spotify Player
+
+![Spotify Player](images/default-spotify.png)
+
+### Styled Player
+
+![Styled Player](images/custom-style.png)
+
 # TODO
 
 - [ ] Better Config (json?)
@@ -95,6 +115,7 @@ Now the extension is loaded. **Keep in mind**: Each time you open Chrome, you'll
 - Show player position
    - [x] Spotify
    - [ ] VLC
+   - [x] YouTube
    - [ ] Browser
 - [ ] Share types
    
