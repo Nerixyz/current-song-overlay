@@ -12,6 +12,10 @@
     {
       "matches": ["*://*.youtube.com/*"],
       "js": ["trackVideoProgress.js"]
+    },
+    {
+      "matches": ["*://plug.dj/*"],
+      "js": ["plugDjFix.js"]
     }
   ],
   "permissions": [

@@ -4,6 +4,7 @@ import copy from 'rollup-plugin-copy'
 export default [
   ['src/background.ts', 'dist/build/background.js'],
   ['src/trackVideoProgress.ts', 'dist/build/trackVideoProgress.js'],
+  ['src/plugDjFix.ts', 'dist/build/plugDjFix.js'],
 ].map(([input, output]) => ({
   input,
   output: {
