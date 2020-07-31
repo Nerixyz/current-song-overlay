@@ -27,5 +27,8 @@ async function sendCurrent(target: HTMLVideoElement) {
   if(Number.isNaN(target.duration)) {
     return console.error('doctorWtf', 'duration is NaN', target);
   }
-  return browser.runtime.sendMessage(await createState(target));
+  return browser.runtime.sendMessage({
+    type: 'PlayState',
+    data: await createState(target)
+  });
 }

@@ -52,3 +52,7 @@ function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Prom
     obj[key] = arg1 => new Promise(resolve => base(arg1, resolve));
   }
 }
+
+export function cloneClass<T>(base: T): T {
+  return Object.assign(Object.create(Object.getPrototypeOf(base)), base);
+}

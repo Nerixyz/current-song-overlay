@@ -19,3 +19,12 @@ export interface PlayStateContainer {
   state: VideoPlayState;
   tabId: number;
 }
+
+export interface InternalMessageMap {
+  PlayState: VideoPlayState;
+  Title: string;
+}
+export interface InternalMessage<T extends keyof InternalMessageMap & string = keyof InternalMessageMap & string>  {
+  type: T;
+  data: InternalMessageMap[T];
+}
