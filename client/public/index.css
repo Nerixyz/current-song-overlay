@@ -29,6 +29,7 @@ body {
     width: 1em;
     position: absolute;
     right: 0;
+    top: 0;
     background: linear-gradient(to left, var(--card-color) 10%, transparent);
 }
 
