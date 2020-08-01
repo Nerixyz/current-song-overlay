@@ -27,13 +27,13 @@ fixChrome();
       handler.handlePlayState(
         sender.tab?.id ?? -1,
         {
-          state: message.data as VideoPlayState,
+          state: message.data as VideoPlayState | undefined,
           tabId: sender.tab?.id ?? -1,
         },
         sender.tab!
       );
     } else if (message.type === 'Title') {
-      handler.handleOverriddenTitle(sender.tab?.id ?? -1, message.data as string);
+      handler.handleOverriddenTitle(sender.tab?.id ?? -1, message.data as string | null);
     }
   });
 

@@ -32,8 +32,9 @@ export class TabModel {
     this.playState = state;
   }
 
-  overrideTitle(title: string) {
-    this._overriddenTitle = title;
+  overrideTitle(title: string | null) {
+    if(title === null) this._overriddenTitle = undefined;
+    else this._overriddenTitle = title;
   }
 
   isEqual(other?: TabModel) {

@@ -73,20 +73,19 @@ export class TabChangeHandler {
 
   handlePlayState(tabId: number, state: PlayStateContainer, tab: Tab) {
     const updatedTab = this.getOrCreate(tabId, tab);
-    updatedTab.updatePlayState(state.state.mode === 'playing' ? state.state : undefined);
+    updatedTab.updatePlayState(state.state?.mode === 'playing' ? state.state : undefined);
     if (this.currentlySent?.id === tabId) {
-      if (state.state.mode === 'playing') {
+      if (state.state?.mode === 'playing') {
         this.updateCurrent(updatedTab);
       } else {
         this.updateCurrent();
       }
-    } else if (!this.currentlySent && state.state.mode === 'playing' && !tab.active) {
-      this.currentlySent = cloneClass(updatedTab);
-      this.updateCurrent(this.currentlySent);
+    } else if (!this.currentlySent && state.state?.mode === 'playing' && (!tab.active || tab.windowId !== this.activeWindowId)) {
+      this.updateCurrent(updatedTab);
     }
   }
 
-  handleOverriddenTitle(tabId: number, title: string) {
+  handleOverriddenTitle(tabId: number, title: string | null) {
     this.get(tabId)?.overrideTitle(title);
     this.findAndUpdateNext();
   }

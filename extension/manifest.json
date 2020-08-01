@@ -16,6 +16,11 @@
     {
       "matches": ["*://plug.dj/*"],
       "js": ["plugDjFix.js"]
+    },
+    {
+      "matches": ["*://yt.bug.dj/yt5.html"],
+      "js": ["bugDjFix.js"],
+      "all_frames": true
     }
   ],
   "permissions": [

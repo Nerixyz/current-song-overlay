@@ -16,7 +16,7 @@ export interface VideoPlayState {
 }
 
 export interface PlayStateContainer {
-  state: VideoPlayState;
+  state?: VideoPlayState;
   tabId: number;
 }
 
