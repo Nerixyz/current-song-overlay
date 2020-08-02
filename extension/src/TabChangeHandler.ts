@@ -3,16 +3,25 @@ import { PlayStateContainer, UpdateEventFn, VideoPlayState } from './types';
 import { cleanupTabName, cloneClass } from './utilities';
 import { TabModel } from './TabModel';
 
+enum WindowState {
+  normal,
+  minimized,
+  maximized,
+  fullscreen,
+  docked,
+}
+
 export class TabChangeHandler {
   currentlySent?: TabModel;
   currentAudible: Record<number, TabModel> = {};
+  windowStates: Record<number, WindowState> = {};
 
   constructor(
     protected options: { onlyInactive: boolean } = { onlyInactive: true },
     protected activeWindowId: number,
     initialTabs: Tab[]
   ) {
-    for(const tab of initialTabs) this.create(tab);
+    for (const tab of initialTabs) this.create(tab);
   }
 
   public onUpdate?: UpdateEventFn;
@@ -66,9 +75,14 @@ export class TabChangeHandler {
     this.findAndUpdateNext();
   }
 
-  handleWindowFocus(windowId: number) {
+  async handleWindowFocus(windowId: number) {
+    await this.updateWindowStates();
     this.activeWindowId = windowId;
     this.findAndUpdateNext();
+  }
+
+  handleWindowRemoved(windowId: number) {
+    delete this.windowStates[windowId];
   }
 
   handlePlayState(tabId: number, state: PlayStateContainer, tab: Tab) {
@@ -80,7 +94,11 @@ export class TabChangeHandler {
       } else {
         this.updateCurrent();
       }
-    } else if (!this.currentlySent && state.state?.mode === 'playing' && (!tab.active || tab.windowId !== this.activeWindowId)) {
+    } else if (
+      !this.currentlySent &&
+      state.state?.mode === 'playing' &&
+      (this.isValidTab(updatedTab))
+    ) {
       this.updateCurrent(updatedTab);
     }
   }
@@ -90,10 +108,20 @@ export class TabChangeHandler {
     this.findAndUpdateNext();
   }
 
+  protected async updateWindowStates() {
+    for (const window of await browser.windows.getAll()) {
+      this.windowStates[window.id ?? -1] = WindowState[window.state ?? 'normal'];
+    }
+  }
+
+  protected isValidTab(tab: TabModel) {
+    return !this.options.onlyInactive || (
+      (!tab.active || tab.windowId !== this.activeWindowId) &&
+      this.windowStates[tab.windowId] !== WindowState.fullscreen);
+  }
+
   protected findAndUpdateNext() {
-    let audible = Object.values(this.currentAudible).filter(x =>
-      x.audible && (this.options.onlyInactive ? !x.active || x.windowId !== this.activeWindowId : true)
-    );
+    let audible = Object.values(this.currentAudible).filter(x => x.audible && this.isValidTab(x));
     if (audible.length > 1) audible = audible.filter(x => !x.active);
     this.updateCurrent(audible[0]);
   }

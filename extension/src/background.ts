@@ -20,7 +20,8 @@ fixChrome();
   );
   browser.tabs.onCreated.addListener(tab => handler.handleCreated(tab));
   browser.tabs.onRemoved.addListener(tabId => handler.handleRemove(tabId));
-  browser.windows.onFocusChanged.addListener(windowId => handler.handleWindowFocus(windowId));
+  browser.windows.onFocusChanged.addListener(windowId => handler.handleWindowFocus(windowId).catch(console.error));
+  browser.windows.onRemoved.addListener(windowId => handler.handleWindowRemoved(windowId));
 
   browser.runtime.onMessage.addListener((message: InternalMessage, sender) => {
     if (message.type === 'PlayState') {
