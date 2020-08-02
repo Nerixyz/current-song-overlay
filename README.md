@@ -11,7 +11,6 @@ Maybe I'll change that.
 - [Supported Interfaces](#supported-interfaces)
 - [How to set it up](#how-to-set-it-up)
 - [Examples](#examples)
-- [TODO](#todo)
 - [Developing](#developing)
 
 ### Main Features
@@ -128,25 +127,6 @@ Now the extension is loaded. **Keep in mind**: Each time you open Chrome, you'll
 ### Styled Player
 
 ![Styled Player](images/custom-style.png)
-
-# TODO
-
-- [ ] Better Config (json?)
-- [ ] Top Level CSS Config
-- [ ] Single Bundle Pipeline
-- [x] Serve Overlay on `/server/` instead of `/extension/`
-- [x] Publish Extension to `addons.mozilla.com`
-- [ ] ~~Publish Extension to Chrome thing~~ (no i don't think so)
-- [ ] Setup GitHub Actions to bundle to ZIP
-- [x] Add Script (bat, ps1, sh) Files
-- [ ] Add sh Scripts
-- [ ] Import cookies from Spotify using extension (copy or auto? security?)
-- Show player position
-  - [x] Spotify
-  - [ ] VLC
-  - [x] YouTube
-  - [ ] Browser
-- [ ] Share types
 
 # Developing
 
