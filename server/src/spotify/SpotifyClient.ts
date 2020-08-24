@@ -66,7 +66,7 @@ export class SpotifyClient {
                             currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
                             playbackSpeed: cluster.player_state.playback_speed,
                             maxPositionSec: Number(cluster.player_state.duration) / 1000,
-                            startTs: Number(cluster.timestamp),
+                            startTs: Number(cluster.player_state.timestamp ?? cluster.timestamp),
                         }
                     }
                 };
