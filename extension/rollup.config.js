@@ -2,17 +2,24 @@ import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy'
 
 export default [
-  ['src/background.ts', 'dist/build/background.js'],
-  ['src/trackVideoProgress.ts', 'dist/build/trackVideoProgress.js'],
-  ['src/plugDjFix.ts', 'dist/build/plugDjFix.js'],
-  ['src/bugDjFix.ts', 'dist/build/bugDjFix.js'],
-].map(([input, output]) => ({
-  input,
+  'background',
+  ...fromDirectory('content-scripts', [
+    'bugDjFix',
+    'plugDjFix',
+    'trackVideoProgress',
+    'soundcloud'
+  ]),
+].map((file) => ({
+  input: `src/${file}.ts`,
   output: {
-    file: output,
+    file: `dist/build/${file}.js`,
     format: 'iife',
   },
   plugins: [typescript({ tsconfig: 'tsconfig.json' }), copy({
     targets: [{src: 'manifest.json', dest: 'dist/build'}]
   })],
 }));
+
+function fromDirectory(directory, files = []) {
+  return files.map(file => `${directory}/${file}`);
+}

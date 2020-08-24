@@ -56,3 +56,15 @@ function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Prom
 export function cloneClass<T>(base: T): T {
   return Object.assign(Object.create(Object.getPrototypeOf(base)), base);
 }
+
+export async function tryGetElementByClass<T extends Element>(name: string, fn?: (el: T) => void): Promise<T> {
+  while (true) {
+    const el = document.getElementsByClassName(name);
+    if (!el || el.length === 0 || el[0] === null) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      continue;
+    }
+    fn?.(el[0] as T);
+    return el[0] as T;
+  }
+}

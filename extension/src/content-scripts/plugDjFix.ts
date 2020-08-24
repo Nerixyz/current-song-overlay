@@ -1,4 +1,5 @@
-import { VideoPlayState } from './types';
+import { VideoPlayState } from '../types';
+import { tryGetElementByClass } from '../utilities';
 
 let playState: VideoPlayState | undefined;
 const resetProgress = () => (playState = undefined);
@@ -22,17 +23,6 @@ tryGetElementByClass('community__song-playing', (el: HTMLParagraphElement) => {
   });
 }).catch(console.error);
 
-async function tryGetElementByClass<T extends Element>(name: string, fn: (el: T) => void) {
-  while (true) {
-    const el = document.getElementsByClassName(name);
-    if (!el || el.length === 0 || el[0] === null) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      continue;
-    }
-    fn(el[0] as T);
-    break;
-  }
-}
 
 async function tryUpdatePlayState() {
   const iframe = Array.from(document.getElementsByTagName('iframe')).find(x => x.id === 'sc-frame');

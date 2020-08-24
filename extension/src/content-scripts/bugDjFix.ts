@@ -1,4 +1,4 @@
-import { VideoPlayState } from './types';
+import { VideoPlayState } from '../types';
 
 let source: Window;
 let origin: string;
