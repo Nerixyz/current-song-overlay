@@ -55,7 +55,8 @@ export class SpotifyClient {
 
                 const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
                 if(!current) {
-                    console.log(cluster.player_state.track.uri);
+                    log.error(`Failed to get current track: ${cluster.player_state.track?.uri}`);
+                    continue;
                 }
                 yield {
                     type: 'StateChanged', data: {
