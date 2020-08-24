@@ -16,6 +16,8 @@ export class SpotifyHttpApi {
 
   protected connectionId?: string;
   accessToken?: string;
+  dealer = "gew-dealer.spotify.com:443";
+  spClient = "gew-spclient.spotify.com:443";
 
   constructor(protected cookies: string) {}
 
@@ -26,6 +28,14 @@ export class SpotifyHttpApi {
         headers: this.baseHeaders,
       }
     ).catch(logFetchError(log.error, "fetch track infos"));
+  }
+
+  async updateDealerAndSpClient() {
+    const res = await jsonFetch(
+      "https://apresolve.spotify.com/?type=dealer&type=spclient"
+    ).catch(logFetchError(log.error, "get dealer"));
+    this.dealer = res.dealer?.[0] || this.dealer;
+    this.spClient = res.spclient?.[0] || this.spClient;
   }
 
   updateConnectionId(conn: string) {
@@ -57,48 +67,45 @@ export class SpotifyHttpApi {
   }
 
   postDevice() {
-    return jsonFetch(
-      "https://gew-spclient.spotify.com/track-playback/v1/devices",
-      {
-        method: "POST",
-        headers: this.baseHeaders,
-        body: JSON.stringify({
-          device: {
-            brand: "spotify",
-            capabilities: {
-              change_volume: true,
-              enable_play_token: true,
-              supports_file_media_type: true,
-              play_token_lost_behavior: "pause",
-              disable_connect: false,
-              audio_podcasts: true,
-              video_playback: true,
-              manifest_formats: [
-                "file_urls_mp3",
-                "manifest_ids_video",
-                "file_urls_external",
-                "file_ids_mp4",
-                "file_ids_mp4_dual",
-              ],
-            },
-            device_id: this.deviceId, //TODO
-            device_type: "computer",
-            metadata: {},
-            model: "web_player",
-            name: "Web Player (Firefox)",
-            platform_identifier: "web_player windows 10;firefox 80.0;desktop",
+    return jsonFetch(`https://${this.spClient}/track-playback/v1/devices`, {
+      method: "POST",
+      headers: this.baseHeaders,
+      body: JSON.stringify({
+        device: {
+          brand: "spotify",
+          capabilities: {
+            change_volume: true,
+            enable_play_token: true,
+            supports_file_media_type: true,
+            play_token_lost_behavior: "pause",
+            disable_connect: false,
+            audio_podcasts: true,
+            video_playback: true,
+            manifest_formats: [
+              "file_urls_mp3",
+              "manifest_ids_video",
+              "file_urls_external",
+              "file_ids_mp4",
+              "file_ids_mp4_dual",
+            ],
           },
-          connection_id: this.connectionId,
-          client_version: "harmony:4.4.0-1919a0b",
-          volume: 65535,
-        }),
-      }
-    ).catch(logFetchError(log.error, "post device"));
+          device_id: this.deviceId, //TODO
+          device_type: "computer",
+          metadata: {},
+          model: "web_player",
+          name: "Web Player (Firefox)",
+          platform_identifier: "web_player windows 10;firefox 80.0;desktop",
+        },
+        connection_id: this.connectionId,
+        client_version: "harmony:4.4.0-1919a0b",
+        volume: 65535,
+      }),
+    }).catch(logFetchError(log.error, "post device"));
   }
 
   putConnectState() {
     return jsonFetch(
-      `https://gew-spclient.spotify.com/connect-state/v1/devices/hobs_${this.deviceId}`,
+      `https://${this.spClient}/connect-state/v1/devices/hobs_${this.deviceId}`,
       {
         headers: {
           ...this.baseHeaders,

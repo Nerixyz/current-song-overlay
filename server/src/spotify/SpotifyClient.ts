@@ -20,10 +20,12 @@ export class SpotifyClient {
     async connect() {
         this.http = new SpotifyHttpApi(this.cookies);
         this.cache = new SpotifyCache(this.http);
+        await this.http.updateDealerAndSpClient()
+            .catch(e => log.info(`Failed to get dealer and spclient, using defaults: ${e}`));
         await this.http.updateAccessToken();
 
         // TODO: URL
-        this.ws = await connectWebSocket(`wss://gew-dealer.spotify.com/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
+        this.ws = await connectWebSocket(`wss://${this.http.dealer}/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
             new Headers({'Cookies': this.cookies})
         );
         log.info('Connected to Spotify WebSocket');
