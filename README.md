@@ -45,10 +45,13 @@ Websites not listed here aren't tested yet but **might** already be supported.
 
 # How to set it up
 
+Extract the `build-...zip` into some folder.
+
 This application consists of multiple "modules" you can toggle.
 You can enable and disable modules in the `.env` file (open it with any text editor).
 
 Once you configured the `.env` file, you can start the application, or create a service which runs all the time, so you don't have to care about it.
+_Pro tip_: Create a backup of your `.env` file, so you don't replace it by accident.
 To set up the service,
 
 1. Run `create-service.bat` **as Administrator** (right click the file and select `Run as Administrator`).
