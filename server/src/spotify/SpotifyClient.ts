@@ -6,6 +6,7 @@ import {SpotifyWsMessage} from './ws.types.ts';
 import {getId} from './utilities.ts';
 import {SpotifyTrack} from './http.types.ts';
 import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap} from '../types.ts';
+import * as log from "https://deno.land/std/log/mod.ts";
 
 export class SpotifyClient {
     http?: SpotifyHttpApi;
@@ -25,7 +26,7 @@ export class SpotifyClient {
         this.ws = await connectWebSocket(`wss://gew-dealer.spotify.com/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
             new Headers({'Cookies': this.cookies})
         );
-        console.debug('Connected to spotify WebSocket');
+        log.info('Connected to Spotify WebSocket');
     }
 
     async start() {

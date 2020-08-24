@@ -4,6 +4,7 @@ import {
     isWebSocketCloseEvent,
     WebSocket,
 } from 'https://deno.land/std/ws/mod.ts';
+import * as log from "https://deno.land/std/log/mod.ts";
 
 
 export class WsServer<MsgType = unknown> {
@@ -26,18 +27,17 @@ export class WsServer<MsgType = unknown> {
 
     async start() {
         this.sockets = [];
-        //this.server = serve(`localhost:${this.port}`);
-        console.debug(`listening on :${this.port}`);
+        log.debug(`:${this.port} - listening`);
         for await (const req of serve({port: this.port})) {
             const {conn, r: bufReader, w: bufWriter, headers} = req;
-            console.debug(`new connection on :${this.port} ${headers.get('user-agent')}`);
+            log.debug(`:${this.port} - new connection from ${headers.get('user-agent')}`);
             acceptWebSocket({
                 conn,
                 bufReader,
                 bufWriter,
                 headers,
             }).then(sock => this.handleWs(sock)).catch(async (err) => {
-                console.error(`failed to accept websocket: ${err.stack}`);
+                log.error(`:${this.port} - failed to accept websocket: ${err.stack}`);
                 await req.respond({status: 400});
             });
         }
@@ -54,7 +54,7 @@ export class WsServer<MsgType = unknown> {
     }
 
     public async stop(): Promise<void> {
-        console.debug(`Stop :${this.port}`);
+        log.debug(`:${this.port} - stop`);
         this.server?.close();
         await Promise.all(this.sockets.map(s => s.close()));
     }

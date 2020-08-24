@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 export class VlcClient {
     protected conn?: Deno.Conn;
 
@@ -107,7 +109,7 @@ function parseInfoResponse(content: string): VlcInfoMessage {
             case 'end of stream info':
                 break;
             default:
-                console.log(objHeader);
+                log.debug(`VLC: unknown object header: ${objHeader}`);
         }
     }
     return partial as VlcInfoMessage;

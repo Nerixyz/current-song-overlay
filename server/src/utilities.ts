@@ -1,5 +1,6 @@
 import { config } from 'https://deno.land/x/dotenv/mod.ts';
 config({export: true});
+import * as log from "https://deno.land/std/log/mod.ts";
 
 export function splitTitle(title: string): { name: string, artists?: string[] } {
     if (title.includes('-') && !title.match(/\([^()]+-[^()]+\)/)) {
@@ -14,11 +15,12 @@ export function splitTitle(title: string): { name: string, artists?: string[] } 
     }
 }
 
-export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Error) => void): [() => Promise<void>, () => void] {
+export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Error) => void, name = '<unknown work>'): [() => Promise<void>, () => void] {
     let timeoutId: number | undefined = undefined;
     let die = false;
     const workFn = async () => {
         let factor = 0;
+        log.info(`Starting work for ${name}.`);
         while (true) {
             if(die) break;
             try {
@@ -27,10 +29,12 @@ export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Err
             } catch (e) {
                 onError?.(e);
                 factor = Math.min(factor + 10, 300);
+                log.debug(`Work failed for ${name} - waiting ${factor}s`);
             }
             if(die) break;
             await new Promise(resolve => timeoutId = setTimeout(resolve, factor * 1000));
         }
+        log.info(`Work for ${name} ended.`);
     };
     return [workFn, () => {
         die = true;
@@ -45,8 +49,8 @@ export interface Reloadable {
 export function createReloader() {
     const active: [Reloadable, () => void][] = [];
     return {
-        start(obj: Reloadable, onError?: (e: Error) => void): Promise<void> {
-            const reconnectInfo = autoReconnect(() => obj.start(), onError);
+        start(obj: Reloadable, onError?: (e: Error) => void, name?: string): Promise<void> {
+            const reconnectInfo = autoReconnect(() => obj.start(), onError, name);
             active.push([obj, reconnectInfo[1]]);
             return reconnectInfo[0]();
         },
@@ -79,6 +83,23 @@ export function readEnableEnvVar(component: string): boolean {
 function expectAndMirror<T>(value: T | undefined, ifUndefined: string): T {
     if(typeof value === 'undefined') throw new Error(ifUndefined);
     return value;
+}
+
+export function rejectNonOk(res: Response): Response {
+    if(res.status !== 200) throw new Error(`Expected 200, got ${res.status} - ${res.statusText}`);
+
+    return res;
+}
+
+export function jsonFetch<T = any>(info: RequestInfo, init?: RequestInit): Promise<T> {
+    return fetch(info, init).then(rejectNonOk).then(x => x.json());
+}
+
+export function logFetchError(loggerFn: (arg: string) => void, operation: string) {
+    return (e: Error) => {
+        loggerFn(`Failed to ${operation}: ${e.message ?? e}`);
+        throw e;
+    };
 }
 
 
