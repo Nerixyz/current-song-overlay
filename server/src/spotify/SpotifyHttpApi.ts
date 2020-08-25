@@ -66,43 +66,6 @@ export class SpotifyHttpApi {
     return accessToken;
   }
 
-  postDevice() {
-    return jsonFetch(`https://${this.spClient}/track-playback/v1/devices`, {
-      method: "POST",
-      headers: this.baseHeaders,
-      body: JSON.stringify({
-        device: {
-          brand: "spotify",
-          capabilities: {
-            change_volume: true,
-            enable_play_token: true,
-            supports_file_media_type: true,
-            play_token_lost_behavior: "pause",
-            disable_connect: false,
-            audio_podcasts: true,
-            video_playback: true,
-            manifest_formats: [
-              "file_urls_mp3",
-              "manifest_ids_video",
-              "file_urls_external",
-              "file_ids_mp4",
-              "file_ids_mp4_dual",
-            ],
-          },
-          device_id: this.deviceId, //TODO
-          device_type: "computer",
-          metadata: {},
-          model: "web_player",
-          name: "Web Player (Firefox)",
-          platform_identifier: "web_player windows 10;firefox 80.0;desktop",
-        },
-        connection_id: this.connectionId,
-        client_version: "harmony:4.4.0-1919a0b",
-        volume: 65535,
-      }),
-    }).catch(logFetchError(log.error, "post device"));
-  }
-
   putConnectState() {
     return jsonFetch(
       `https://${this.spClient}/connect-state/v1/devices/hobs_${this.deviceId}`,
@@ -127,13 +90,4 @@ export class SpotifyHttpApi {
     ).catch(logFetchError(log.error, "put client state"));
   }
 
-  enableNotifications() {
-    return jsonFetch(
-      `https://api.spotify.com/v1/me/notifications/user?connection_id=${this.connectionId}`,
-      {
-        headers: this.baseHeaders,
-        method: "PUT",
-      }
-    ).catch(logFetchError(log.error, "enable notifications"));
-  }
 }
