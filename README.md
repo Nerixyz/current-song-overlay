@@ -33,13 +33,14 @@ Maybe I'll change that.
 These are **known** websites, the browser extension works with.
 Websites not listed here aren't tested yet but **might** already be supported.
 
-| Website    | Title              | Progress Bar          |
-| ---------- | ------------------ | --------------------- |
-| YouTube    | :white_check_mark: | :white_check_mark: \* |
-| Plug.Dj    | :white_check_mark: | :white_check_mark:    |
-| SoundCloud | :white_check_mark: | :x:                   |
-| Twitch     | :white_check_mark: | :x:                   |
-| CyTube     | :x:                | :x:                   |
+| Website       | Title              | Progress Bar          |
+| ------------- | ------------------ | --------------------- |
+| YouTube       | :white_check_mark: | :white_check_mark: \* |
+| Plug.Dj       | :white_check_mark: | :white_check_mark:    |
+| SoundCloud    | :white_check_mark: | :white_check_mark:    |
+| Twitch        | :white_check_mark: | :x:                   |
+| CyTube        | :x:                | :x:                   |
+| Neverthink.tv | :x:                | :x:                   |
 
 \* Livestreams aren't supported
 
