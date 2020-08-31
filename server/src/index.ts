@@ -1,6 +1,6 @@
 // load the logger before everything
 import setupLogging from './logging.ts';
-await setupLogging();
+const stopLogging = await setupLogging();
 
 import { createReloader, readEnableEnvVar } from "./utilities.ts";
 import { OverlayServer } from "./OverlayServer.ts";
@@ -62,8 +62,9 @@ await Promise.race(promises)
   .catch((e) =>
     logger.critical(`Client errored: ${e.message ?? e} ${e.stack ?? ""}`)
   )
-  .then(async () => {
+  .finally(async () => {
     logger.info("Client stopped");
     await reloader.stop();
+    stopLogging();
     Deno.exit();
   });

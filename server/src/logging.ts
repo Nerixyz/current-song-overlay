@@ -1,14 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-export default function setup() {
-    return log.setup({
+export default async function setup() {
+    const fileHandler = new log.handlers.RotatingFileHandler("INFO", {
+        filename: "log.txt",
+        maxBackupCount: 10,
+        maxBytes: 8192,
+        formatter: '{datetime}: {levelName} {msg}'
+    });
+    await log.setup({
         handlers: {
             console: new log.handlers.ConsoleHandler("DEBUG"),
-            logFile: new log.handlers.RotatingFileHandler("INFO", {
-                filename: "log.txt",
-                maxBackupCount: 10,
-                maxBytes: 8192,
-            }),
+            logFile: fileHandler,
         },
         loggers: {
             default: {
@@ -17,4 +19,6 @@ export default function setup() {
             }
         }
     });
+    const intervalId = setInterval(() => fileHandler.flush(), 1000 * 60);
+    return () => clearInterval(intervalId);
 }
