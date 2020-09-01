@@ -116,7 +116,7 @@ export class SpotifyClient {
     public async stop(): Promise<void> {
         this.stopped = true;
         this.stopPing();
-        await this.ws?.close();
+        await this.ws?.close().catch(() => undefined);
         if(this.timeoutId) clearTimeout(this.timeoutId);
     }
 }
