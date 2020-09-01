@@ -2,6 +2,7 @@ import { SpotifyTrackResponse } from "./http.types.ts";
 import { USER_AGENT, APP_VERSION } from "./constants.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
 import { jsonFetch, logFetchError } from "../utilities.ts";
+
 export class SpotifyHttpApi {
   protected deviceId: string = new Array(20)
     .fill(0)
