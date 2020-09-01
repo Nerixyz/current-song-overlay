@@ -56,6 +56,8 @@ body {
 #song-cover {
     width: auto;
     height: 100%;
+    z-index: 1;
+    box-shadow: #00000040 0 0 8px 0;
 }
 
 .hidden {
@@ -75,4 +77,41 @@ body {
     background: var(--progress-bar-color);
     position: absolute;
     transform-origin: left;
+    z-index: 1;
+}
+
+.mq-animating {
+    animation-name: marquee;
+    animation-delay: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+.invis {
+    position: absolute;
+    z-index: 999;
+    visibility: hidden;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    40% {
+        transform: translateX(var(--animation-width));
+        opacity: 1;
+    }
+    45% {
+        transform: translateX(var(--animation-width));
+        opacity: 0;
+    }
+    46% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

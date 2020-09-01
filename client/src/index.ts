@@ -1,9 +1,19 @@
-import { connectWithReconnect } from './utilities';
+import { connectWithReconnect, getCSSVariable } from './utilities';
 import { ProgressBarAnimation } from './progress-bar-animation';
 import { SmolDom } from './SmolDom';
 import { MySmolDom, PositionChangedEvent, StateChangedEvent, WsMessage, WsMessageMap } from './types';
+import { useMarquee } from './SmolMarquee';
 
-document.addEventListener('DOMContentLoaded', () => connectWithReconnect('ws://localhost:231', makeOnWsMessage()));
+
+const songInfoMaxWidth = getCSSVariable('song-info-max-width').replace(/[^\d]/g, '');
+const titleEl = document.getElementById('song-title');
+if(!titleEl) throw new Error('No title el saj');
+const artistEl = document.getElementById('song-artist');
+if(!artistEl) throw new Error('No artist el saj');
+useMarquee(titleEl, Number(songInfoMaxWidth), 20);
+useMarquee(artistEl, Number(songInfoMaxWidth), 20);
+
+connectWithReconnect('ws://localhost:231', makeOnWsMessage());
 
 function makeOnWsMessage() {
   const dom = new SmolDom<MySmolDom>({

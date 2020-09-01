@@ -31,3 +31,16 @@ export function connectWithReconnect(url: string, onMessageFn: (e:MessageEvent) 
   set();
   return obj;
 }
+
+export function getCSSVariable(name: string) {
+  return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+}
+
+export function createElement(type: string, options: {id?: string, classes?: string[]}) {
+  const el = document.createElement(type);
+  if(options.id) el.id = options.id;
+  if(options.classes) el.setAttribute('class', options.classes.join(' '));
+
+  return el;
+}
+
