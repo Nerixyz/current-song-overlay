@@ -14,6 +14,11 @@ export class SpotifyClient {
 
     ws?: WebSocket;
 
+    protected pingId?: number;
+    protected timeoutId?: number;
+
+
+
     constructor(private cookies: string) {
     }
 
@@ -34,6 +39,10 @@ export class SpotifyClient {
     async start() {
         await this.connect();
         this.startPing();
+        this.timeoutId = setTimeout(() => {
+            log.info('spotify@ws: reconnecting - access token expired');
+            return this.stop();
+        }, 1000 * 60 * 60);
     }
 
 
@@ -54,10 +63,14 @@ export class SpotifyClient {
 
             for (const {cluster} of message.payloads) {
                 if (!cluster) continue;
+                if(!cluster.player_state.track && cluster.player_state.is_playing) {
+                    log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
+                    return;
+                }
 
                 const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
                 if(!current) {
-                    log.error(`Failed to get current track: ${cluster.player_state.track?.uri}`);
+                    log.error(`spotify@ws: Failed to get current track: ${JSON.stringify(cluster.player_state)}`);
                     continue;
                 }
                 yield {
@@ -90,8 +103,6 @@ export class SpotifyClient {
         return accessToken;
     }
 
-    protected pingId?: number;
-
     startPing() {
         setInterval(() => this.ws?.send(JSON.stringify({type: 'ping'})), 60 * 1000);
     }
@@ -106,6 +117,7 @@ export class SpotifyClient {
         this.stopped = true;
         this.stopPing();
         await this.ws?.close();
+        if(this.timeoutId) clearTimeout(this.timeoutId);
     }
 }
 
