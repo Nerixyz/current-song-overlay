@@ -13,7 +13,7 @@ import {
 import * as log from "https://deno.land/std/log/mod.ts";
 
 const logger = log.getLogger();
-logger.info("Starting Current Song Overlay");
+logger.info("\n\n\nStarting Current Song Overlay");
 
 const clientServer = new OverlayServer(231);
 
@@ -36,7 +36,7 @@ if (readEnableEnvVar("spotify")) {
   promises.push(
     reloader.start(
       createSpotifyClientAndHandler(clientServer, clientServer.createChannel()),
-      (e) => logger.debug(`Spotify: ${e.message}`),
+      (e) => logger.error(`Spotify: ${e.message}`),
       "SpotifyHandler"
     )
   );
