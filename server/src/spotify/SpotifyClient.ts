@@ -39,9 +39,10 @@ export class SpotifyClient {
     async start() {
         await this.connect();
         this.startPing();
-        this.timeoutId = setTimeout(() => {
+        this.timeoutId = setTimeout(async () => {
             log.info('spotify@ws: reconnecting - access token expired');
-            return this.stop();
+            this.stopPing();
+            await this.ws?.close().catch(() => undefined);
         }, 1000 * 60 * 60);
     }
 
@@ -104,7 +105,7 @@ export class SpotifyClient {
     }
 
     startPing() {
-        setInterval(() => this.ws?.send(JSON.stringify({type: 'ping'})), 60 * 1000);
+        this.pingId = setInterval(() => this.ws?.send(JSON.stringify({type: 'ping'})), 60 * 1000);
     }
 
     stopPing() {
