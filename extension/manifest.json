@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "CurrentSong",
-  "version": "0.2.1",
+  "version": "0.2.2",
 
   "description": "Implements a client to send the current active tab to a local server",
 
@@ -25,6 +25,10 @@
     {
       "matches": ["*://*.soundcloud.com/*"],
       "js": ["content-scripts/soundcloud.js"]
+    },
+    {
+      "matches": ["*://*.neverthink.tv/*"],
+      "js": ["content-scripts/neverthink.js"]
     }
   ],
   "permissions": [

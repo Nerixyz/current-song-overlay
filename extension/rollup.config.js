@@ -7,7 +7,8 @@ export default [
     'bugDjFix',
     'plugDjFix',
     'trackVideoProgress',
-    'soundcloud'
+    'soundcloud',
+    'neverthink'
   ]),
 ].map((file) => ({
   input: `src/${file}.ts`,
