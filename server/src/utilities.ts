@@ -25,7 +25,7 @@ export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Err
             if(die) break;
             try {
                 await startFn();
-                factor = 10;
+                factor = 0;
             } catch (e) {
                 onError?.(e);
                 factor = Math.min(factor + 10, 300);
