@@ -19,6 +19,6 @@ export default async function setup() {
             }
         }
     });
-    const intervalId = setInterval(() => fileHandler.flush(), 1000 * 60);
+    const intervalId = setInterval(() => fileHandler.flush(), 1000 * 30);
     return () => clearInterval(intervalId);
 }
