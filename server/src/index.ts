@@ -21,7 +21,7 @@ const reloader = createReloader();
 const promises = [clientServer.start()];
 
 if (readEnableEnvVar("browser")) {
-  logger.info("Using Browser Handler");
+  logger.info("Using BrowserHandler");
   promises.push(
     reloader.start(
       createBrowserHandler(clientServer, clientServer.createChannel()),
@@ -32,7 +32,7 @@ if (readEnableEnvVar("browser")) {
 }
 
 if (readEnableEnvVar("spotify")) {
-  logger.info("Using Spotify Handler");
+  logger.info("Using SpotifyHandler");
   promises.push(
     reloader.start(
       createSpotifyClientAndHandler(clientServer, clientServer.createChannel()),
@@ -43,7 +43,7 @@ if (readEnableEnvVar("spotify")) {
 }
 
 if (readEnableEnvVar("vlc")) {
-  logger.info("Using VLC Handler");
+  logger.info("Using VlcHandler");
   promises.push(
     reloader.start(
       createVlcClient(clientServer, clientServer.createChannel()),
