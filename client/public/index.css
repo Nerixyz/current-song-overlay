@@ -78,6 +78,7 @@ body {
     position: absolute;
     transform-origin: left;
     z-index: 1;
+    transition: transform cubic-bezier(.22,.61,.36,1) 150ms;
 }
 
 .mq-animating {
