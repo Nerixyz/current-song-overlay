@@ -2,11 +2,11 @@ import {APP_VERSION, USER_AGENT} from './constants.ts';
 import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
 import {SpotifyCache} from './SpotifyCache.ts';
 import {connectWebSocket, WebSocket} from 'https://deno.land/std/ws/mod.ts';
-import {SpotifyWsMessage} from './ws.types.ts';
+import {SpotifyWsCluster, SpotifyWsMessage} from './ws.types.ts';
 import {getId} from './utilities.ts';
 import {SpotifyTrack} from './http.types.ts';
-import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap} from '../types.ts';
-import * as log from "https://deno.land/std/log/mod.ts";
+import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap, OverlayClientStateChangedEvent} from '../types.ts';
+import * as log from 'https://deno.land/std/log/mod.ts';
 
 export class SpotifyClient {
     http?: SpotifyHttpApi;
@@ -14,10 +14,10 @@ export class SpotifyClient {
 
     ws?: WebSocket;
 
+    onMessage?: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void;
+
     protected pingId?: number;
     protected timeoutId?: number;
-
-
 
     constructor(private cookies: string) {
     }
@@ -44,6 +44,16 @@ export class SpotifyClient {
             this.stopPing();
             await this.ws?.close().catch(() => undefined);
         }, 1000 * 60 * 60);
+        // get current track
+        queueMicrotask(async () => {
+            // this returns 'bad_request' which is ok. Why? I don't know. PUT /connect-state/.. works afterwards.
+            await this.http?.registerDevice();
+            const state = await this.http?.putConnectState();
+            if(!state) return;
+            const data = await this.handleCluster(state);
+            if(typeof data !== 'object') return;
+            this.onMessage?.({type: 'StateChanged', data });
+        });
     }
 
 
@@ -63,31 +73,43 @@ export class SpotifyClient {
             if (!message.payloads) continue;
 
             for (const {cluster} of message.payloads) {
-                if (!cluster) continue;
-                if(!cluster.player_state.track && cluster.player_state.is_playing) {
-                    log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
-                    return;
+                const result = await this.handleCluster(cluster);
+                if (typeof result === 'number') {
+                    if (result === IteratorConsumerCommand.Continue) continue;
+                    else if (result === IteratorConsumerCommand.Exit) return;
                 }
 
-                const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
-                if(!current) {
-                    log.error(`spotify@ws: Failed to get current track: ${JSON.stringify(cluster.player_state)}`);
-                    continue;
-                }
-                yield {
-                    type: 'StateChanged', data: {
-                        current: current ? normalizeTrack(current) : {name: cluster.player_state.track.metadata.title ?? '<doctorWtf>'},
-                        state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
-                        position: {
-                            currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
-                            playbackSpeed: cluster.player_state.playback_speed,
-                            maxPositionSec: Number(cluster.player_state.duration) / 1000,
-                            startTs: Number(cluster.player_state.timestamp ?? cluster.timestamp),
-                        }
-                    }
-                };
+                yield {type: 'StateChanged', data: result};
             }
         }
+        log.debug('End');
+    }
+
+    public async handleCluster(cluster?: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
+        if (!cluster || !this.cache) return IteratorConsumerCommand.Continue;
+        if (!cluster.player_state.track && cluster.player_state.is_playing) {
+            log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
+            return IteratorConsumerCommand.Exit;
+        }
+
+        if (!cluster.player_state.track) return { state: 'paused' };
+
+
+        const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
+        if (!current) {
+            log.error(`spotify@ws: Failed to get current track: ${JSON.stringify(cluster.player_state)}`);
+            return IteratorConsumerCommand.Continue;
+        }
+        return {
+            current: current ? normalizeTrack(current) : {name: cluster.player_state.track.metadata.title ?? '<doctorWtf>'},
+            state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
+            position: {
+                currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
+                playbackSpeed: cluster.player_state.playback_speed,
+                maxPositionSec: Number(cluster.player_state.duration) / 1000,
+                startTs: Number(cluster.player_state.timestamp ?? cluster.timestamp),
+            }
+        };
     }
 
     protected async getAccessToken(): Promise<string> {
@@ -118,8 +140,13 @@ export class SpotifyClient {
         this.stopped = true;
         this.stopPing();
         await this.ws?.close().catch(() => undefined);
-        if(this.timeoutId) clearTimeout(this.timeoutId);
+        if (this.timeoutId) clearTimeout(this.timeoutId);
     }
+}
+
+enum IteratorConsumerCommand {
+    Continue,
+    Exit,
 }
 
 function normalizeTrack(track: SpotifyTrack): NormalizedTrack {
