@@ -23,8 +23,8 @@ export class SpotifyClient {
     }
 
     async connect() {
-        this.http = new SpotifyHttpApi(this.cookies);
-        this.cache = new SpotifyCache(this.http);
+        this.http = this.http ?? new SpotifyHttpApi(this.cookies);
+        this.cache = this.cache ?? new SpotifyCache(this.http);
         await this.http.updateDealerAndSpClient()
             .catch(e => log.info(`Failed to get dealer and spclient, using defaults: ${e}`));
         await this.http.updateAccessToken();
