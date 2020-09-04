@@ -50,11 +50,13 @@ export function createReloader() {
     const active: [Reloadable, () => void][] = [];
     return {
         start(obj: Reloadable, onError?: (e: Error) => void, name?: string): Promise<void> {
+            log.info(`Adding ${name} as reloadable`);
             const reconnectInfo = autoReconnect(() => obj.start(), onError, name);
             active.push([obj, reconnectInfo[1]]);
             return reconnectInfo[0]();
         },
         async stop() {
+            log.info('Stopping all reloadable tasks');
             for(const item of active) {
                 item[1]();
                 await item[0].stop();
