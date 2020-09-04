@@ -39,6 +39,7 @@ export function createBrowserHandler(client: OverlayServer, browserId: number): 
 
 export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spotifyId: number): Reloadable {
     const spotifyClient = new SpotifyClient(readCookieEnvVar());
+    spotifyClient.onMessage = message => overlayClient.send(message, spotifyId);
     const spotifyHandler = (() => {
         let die = false;
         return {
