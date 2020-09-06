@@ -1,5 +1,5 @@
 import Tab = browser.tabs.Tab;
-import { PlayStateContainer, UpdateEventFn, VideoPlayState } from './types';
+import { PlayStateContainer, UpdateEventFn, VideoMetadata, VideoPlayState } from './types';
 import { cleanupTabName, cloneClass } from './utilities';
 import { TabModel } from './TabModel';
 
@@ -108,6 +108,11 @@ export class TabChangeHandler {
     this.findAndUpdateNext();
   }
 
+  handleMetadataUpdated(tabId: number, metadata?: VideoMetadata) {
+    this.get(tabId)?.updateMetadata(metadata);
+    this.findAndUpdateNext();
+  }
+
   protected async updateWindowStates() {
     for (const window of await browser.windows.getAll()) {
       this.windowStates[window.id ?? -1] = WindowState[window.state ?? 'normal'];
@@ -142,11 +147,11 @@ export class TabChangeHandler {
   }
 
   protected sendTab(tab: TabModel) {
-    return this.emitActive(tab.title, tab.playState);
+    return this.emitActive(tab);
   }
 
-  protected emitActive(title: string, playbackState?: VideoPlayState) {
-    this.onUpdate?.({ type: 'Active', data: { title: cleanupTabName(title), state: playbackState } });
+  protected emitActive(tab: TabModel) {
+    this.onUpdate?.({ type: 'Active', data: tab.serialize() });
   }
 
   protected emitInactive() {

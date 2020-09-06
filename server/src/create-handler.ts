@@ -5,7 +5,7 @@ import {SpotifyClient} from './spotify/SpotifyClient.ts';
 import {VlcClient} from './vlc/VlcClient.ts';
 import pogo from 'https://deno.land/x/pogo/main.ts';
 import {BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from 'https://deno.land/std/log/mod.ts';
 
 export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
     const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
@@ -16,7 +16,13 @@ export function createBrowserHandler(client: OverlayServer, browserId: number): 
                 type: 'StateChanged',
                 data: {
                     state: 'playing',
-                    current: splitTitle(data.title),
+                    current: {
+                        ...(!data.current.artist ? splitTitle(data.current.title) : {
+                            artists: [data.current.artist],
+                            name: data.current.title,
+                        }),
+                        albumImageUrl: data.current.artwork
+                    },
                     position: data.state && data.state.mode === 'playing' ? {
                         startTs: data.state.sentTs,
                         maxPositionSec: data.state.duration,

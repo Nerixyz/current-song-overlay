@@ -1,7 +1,7 @@
 import { InternalMessageMap } from './types';
 
-export function cleanupTabName(name: string) {
-  return name.replace(/(^\([^ ]+\))|(- \w+$)/g, '').trim();
+export function cleanupTabName(name?: string) {
+  return name?.replace(/(^\([^ ]+\))|(- \w+$)/g, '')?.trim();
 }
 
 export function connectWithReconnect(url: string): { value?: WebSocket } {
@@ -57,6 +57,20 @@ function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Prom
 
 export function cloneClass<T>(base: T): T {
   return Object.assign(Object.create(Object.getPrototypeOf(base)), base);
+}
+
+export function isDeepEqual<T>(a: T, b: T): boolean {
+  if(typeof a !== 'object') return a === b;
+
+  const aEntries = Object.entries(a);
+
+  for(const [key, value] of aEntries) {
+    if(!isDeepEqual(value,
+      // @ts-expect-error -- these are the "same"
+      b[key])
+    ) return false;
+  }
+  return true;
 }
 
 export async function tryGetElementByClass<T extends Element>(name: string, fn?: (el: T) => void): Promise<T> {

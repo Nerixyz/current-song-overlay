@@ -40,7 +40,7 @@ export interface UpdateBrowserEventMap {
 }
 
 export interface BrowserActiveEvent {
-    title: string;
+    current: {title: string, artist?: string, artwork?: string};
     state?: BrowserVideoPlayState;
 }
 

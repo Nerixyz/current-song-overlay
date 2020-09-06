@@ -1,10 +1,10 @@
 import Tab = browser.tabs.Tab;
-import { VideoPlayState } from './types';
+import { UpdateActiveEventData,  VideoMetadata, VideoPlayState } from './types';
+import { cleanupTabName, isDeepEqual } from './utilities';
 
 export class TabModel {
-
   get title() {
-    return this._overriddenTitle ?? this._title;
+    return cleanupTabName(this._overriddenTitle) ?? this.metadata?.metadata?.title ?? cleanupTabName(this._title) ?? '';
   }
 
   protected _title: string = '';
@@ -12,9 +12,9 @@ export class TabModel {
   id: number = -1;
   windowId: number = -1;
   playState?: VideoPlayState;
+  metadata?: VideoMetadata;
   active: boolean = false;
   audible: boolean = false;
-
 
   constructor(tab: Tab) {
     this.update(tab);
@@ -33,16 +33,21 @@ export class TabModel {
   }
 
   overrideTitle(title: string | null) {
-    if(title === null) this._overriddenTitle = undefined;
+    if (title === null) this._overriddenTitle = undefined;
     else this._overriddenTitle = title;
   }
 
+  updateMetadata(newMeta?: VideoMetadata) {
+    this.metadata = newMeta;
+  }
+
   isEqual(other?: TabModel) {
-    return this === other || (
-      !!other &&
-      this.id === other.id &&
-      this.title === other.title &&
-      this.playState === other.playState
+    return (
+      this === other ||
+      (!!other &&
+        this.id === other.id &&
+        this.title === other.title &&
+        this.playState === other.playState && isDeepEqual(this.metadata, other.metadata))
     );
   }
 
@@ -54,4 +59,16 @@ export class TabModel {
     this.active = active;
   }
 
+  serialize(): UpdateActiveEventData {
+    return {
+      current: {
+        title: this.title,
+        artwork: this.metadata?.metadata?.artwork,
+        artist: this._overriddenTitle || !this.metadata?.metadata?.artist || this.metadata.metadata.title.includes('-') ? undefined : this.metadata.metadata?.artist,
+      },
+      state: this.playState,
+    };
+  }
 }
+
+

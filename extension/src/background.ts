@@ -35,6 +35,8 @@ fixChrome();
       );
     } else if (message.type === 'Title') {
       handler.handleOverriddenTitle(sender.tab?.id ?? -1, message.data as string | null);
+    } else if(message.type === 'Metadata') {
+      handler.handleMetadataUpdated(sender.tab?.id ?? -1, JSON.parse(message.data as string) || undefined);
     }
   });
 

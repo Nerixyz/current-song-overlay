@@ -8,7 +8,8 @@ export default [
     'plugDjFix',
     'trackVideoProgress',
     'soundcloud',
-    'neverthink'
+    'neverthink',
+    'mediaSessionProxy'
   ]),
 ].map((file) => ({
   input: `src/${file}.ts`,

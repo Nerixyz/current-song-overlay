@@ -29,6 +29,11 @@
     {
       "matches": ["*://*.neverthink.tv/*"],
       "js": ["content-scripts/neverthink.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-scripts/mediaSessionProxy.js"],
+      "run_at": "document_start"
     }
   ],
   "permissions": [
