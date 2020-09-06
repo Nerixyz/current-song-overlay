@@ -4,7 +4,7 @@ export default async function setup() {
     const fileHandler = new log.handlers.RotatingFileHandler("INFO", {
         filename: "log.txt",
         maxBackupCount: 10,
-        maxBytes: 8192,
+        maxBytes: 1048576,
         formatter: '{datetime}: {levelName} {msg}'
     });
     await log.setup({
