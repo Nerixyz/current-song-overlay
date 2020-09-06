@@ -1,4 +1,5 @@
 import { VideoPlayState } from '../types';
+import { sendRuntimeMessage } from '../utilities';
 
 window.addEventListener('message', async msg => {
   if (!msg.origin.endsWith('youtube.com')) return;
@@ -11,17 +12,11 @@ window.addEventListener('message', async msg => {
     currentPos: info.currentTime,
     sentTs: info.currentTimeLastUpdated_ * 1000,
     speed: info.playbackRate,
-    duration: info.duration,
+    duration: info.duration
   };
   await Promise.all([
-    browser.runtime.sendMessage({
-      type: 'PlayState',
-      data: state,
-    }),
-    browser.runtime.sendMessage({
-      type: 'Title',
-      data: `${info.videoData.author} - ${info.videoData.title}`,
-    }),
+    sendRuntimeMessage('PlayState', state),
+    sendRuntimeMessage('Title', `${info.videoData.author} - ${info.videoData.title}`)
   ]);
 });
 

@@ -22,7 +22,7 @@ export interface PlayStateContainer {
 
 export interface InternalMessageMap {
   PlayState: VideoPlayState;
-  Title: string;
+  Title: string | null;
 }
 export interface InternalMessage<T extends keyof InternalMessageMap & string = keyof InternalMessageMap & string>  {
   type: T;

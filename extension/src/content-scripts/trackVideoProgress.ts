@@ -1,3 +1,6 @@
+import { sendRuntimeMessage } from '../utilities';
+import { VideoPlayState } from '../types';
+
 function changeHandler({target}: {target: unknown}) {
   if(!(target instanceof HTMLVideoElement)) return;
   sendCurrent(target).catch(console.error);
@@ -8,7 +11,7 @@ document.addEventListener('pause', changeHandler, true);
 document.addEventListener('ratechange', changeHandler, true);
 document.addEventListener('seeked', changeHandler, true);
 
-async function createState(target: HTMLVideoElement) {
+function createState(target: HTMLVideoElement): VideoPlayState {
   return {
     speed: target.playbackRate,
     mode: target.paused ? 'paused' : 'playing',
@@ -27,8 +30,5 @@ async function sendCurrent(target: HTMLVideoElement) {
   if(Number.isNaN(target.duration)) {
     return console.error('doctorWtf', 'duration is NaN', target);
   }
-  return browser.runtime.sendMessage({
-    type: 'PlayState',
-    data: await createState(target)
-  });
+  return sendRuntimeMessage('PlayState', createState(target));
 }

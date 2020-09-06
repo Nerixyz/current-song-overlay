@@ -1,4 +1,4 @@
-import { tryGetElementByClass } from '../utilities';
+import { sendRuntimeMessage, tryGetElementByClass } from '../utilities';
 import { VideoPlayState } from '../types';
 
 (async () => {
@@ -7,10 +7,7 @@ import { VideoPlayState } from '../types';
   const playEl = await tryGetElementByClass('playControl');
 
   const playState: VideoPlayState = {duration: 1, speed: 1,sentTs: 0, currentPos: 0, mode: 'paused'};
-  const sendPlayState = () => browser.runtime.sendMessage({
-    type: 'PlayState',
-    data: playState
-  });
+  const sendPlayState = () => sendRuntimeMessage('PlayState', playState);
   const updatePlayState =async  () => {
     playState.mode = playEl.classList.contains('playing') ? 'playing' : 'paused';
     const duration = Number(progressWrapperEl.attributes.getNamedItem('aria-valuemax')?.value ?? 0);

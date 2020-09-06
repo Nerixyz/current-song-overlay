@@ -1,3 +1,5 @@
+import { InternalMessageMap } from './types';
+
 export function cleanupTabName(name: string) {
   return name.replace(/(^\([^ ]+\))|(- \w+$)/g, '').trim();
 }
@@ -67,4 +69,11 @@ export async function tryGetElementByClass<T extends Element>(name: string, fn?:
     fn?.(el[0] as T);
     return el[0] as T;
   }
+}
+
+export function sendRuntimeMessage<T extends keyof InternalMessageMap>(type: T, data: InternalMessageMap[T]) {
+  return browser.runtime.sendMessage({
+    type,
+    data
+  })
 }
