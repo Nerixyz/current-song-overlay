@@ -44,6 +44,7 @@ export function fixChrome() {
   }
   tryPromisify(browser.tabs, 'get');
   tryPromisify(browser.windows, 'getCurrent');
+  tryPromisify(browser.windows, 'getAll');
 }
 
 function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Promise<any> }>(obj: T, key: K) {
