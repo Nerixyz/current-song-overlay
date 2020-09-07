@@ -87,6 +87,10 @@ export async function tryGetElementByClass<T extends Element>(name: string, fn?:
 }
 
 export function sendRuntimeMessage<T extends keyof InternalMessageMap>(type: T, data: InternalMessageMap[T]) {
+  if (!globalThis.browser) {
+    // @ts-ignore -- fix for chrome
+    globalThis.browser = chrome;
+  }
   return browser.runtime.sendMessage({
     type,
     data
