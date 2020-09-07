@@ -6,10 +6,12 @@ fixChrome();
 
 (async () => {
   console.log('background');
+  const isChrome = !browser.tabs.detectLanguage.length;
+
   const currentWindow = await browser.windows.getCurrent();
   const handler = new TabChangeHandler(
     { onlyInactive: true },
-    currentWindow?.id ?? -1,
+    isChrome ? -1 : currentWindow?.id ?? -1,
     await browser.windows.getAll({ populate: true }).then(windows => windows.map(x => x.tabs ?? []).flat())
   );
   browser.tabs.onUpdated.addListener(async (tabId, changeInfo) =>
@@ -20,8 +22,13 @@ fixChrome();
   );
   browser.tabs.onCreated.addListener(tab => handler.handleCreated(tab));
   browser.tabs.onRemoved.addListener(tabId => handler.handleRemove(tabId));
-  browser.windows.onFocusChanged.addListener(windowId => handler.handleWindowFocus(windowId).catch(console.error));
-  browser.windows.onRemoved.addListener(windowId => handler.handleWindowRemoved(windowId));
+
+  // do not use windows api on chrome see: https://bugs.chromium.org/p/chromium/issues/detail?id=387377
+  // returns 1 on firefox and 0 on chrome
+  if(!isChrome) {
+    browser.windows.onFocusChanged.addListener(windowId => handler.handleWindowFocus(windowId).catch(console.error));
+    browser.windows.onRemoved.addListener(windowId => handler.handleWindowRemoved(windowId));
+  }
 
   browser.runtime.onMessage.addListener((message: InternalMessage, sender) => {
     if (message.type === 'PlayState') {
