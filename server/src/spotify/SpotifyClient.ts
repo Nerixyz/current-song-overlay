@@ -1,7 +1,6 @@
 import {APP_VERSION, USER_AGENT} from './constants.ts';
 import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
 import {SpotifyCache} from './SpotifyCache.ts';
-import {connectWebSocket, WebSocket} from 'https://deno.land/std/ws/mod.ts';
 import {SpotifyWsCluster, SpotifyWsMessage} from './ws.types.ts';
 import {getId} from './utilities.ts';
 import {SpotifyTrack} from './http.types.ts';
@@ -9,31 +8,53 @@ import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap, OverlayClien
 import * as log from 'https://deno.land/std/log/mod.ts';
 
 export class SpotifyClient {
-    http?: SpotifyHttpApi;
-    cache?: SpotifyCache;
+    http: SpotifyHttpApi;
+    cache: SpotifyCache;
 
     ws?: WebSocket;
 
-    onMessage?: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void;
+    private resolveClosePromise?: () => void;
+    closePromise?: Promise<void>;
 
     protected pingId?: number;
     protected timeoutId?: number;
 
-    constructor(private cookies: string) {
+    constructor(
+        private cookies: string,
+        private onMessageCallback: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void)
+    {
+        this.http = new SpotifyHttpApi(this.cookies);
+        this.cache = new SpotifyCache(this.http);
     }
 
     async connect() {
-        this.http = this.http ?? new SpotifyHttpApi(this.cookies);
-        this.cache = this.cache ?? new SpotifyCache(this.http);
         await this.http.updateDealerAndSpClient()
             .catch(e => log.info(`Failed to get dealer and spclient, using defaults: ${e}`));
         await this.http.updateAccessToken();
 
         // TODO: URL
-        this.ws = await connectWebSocket(`wss://${this.http.dealer}/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
-            new Headers({'Cookies': this.cookies})
+        this.ws = new WebSocket(`wss://${this.http.dealer}/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
+            //new Headers({'Cookies': this.cookies})
         );
-        log.info('Connected to Spotify WebSocket');
+        this.updateListeners();
+        this.closePromise = new Promise(resolve => this.resolveClosePromise = resolve);
+    }
+
+    private updateListeners() {
+        this.ws?.addEventListener('error', () => log.error(`spotify@ws: WebSocket had an error?!`));
+        this.ws?.addEventListener('close', () => {
+            log.info('spotify@ws: WebSocket closed');
+            this.resolveClosePromise?.();
+        });
+        this.ws?.addEventListener('open', () => log.info('Connected to Spotify WebSocket'));
+        this.ws?.addEventListener('message', async ({data}: {data: unknown}) => {
+            try {
+                if (typeof data !== 'string') return;
+                await this.handleWsMessage(JSON.parse(data));
+            }catch (e) {
+                log.error(`spotify@ws-handler: Failed to handle message (${e?.message ?? '<unknown>'})`);
+            }
+        });
     }
 
     async start() {
@@ -42,7 +63,7 @@ export class SpotifyClient {
         this.timeoutId = setTimeout(async () => {
             log.info('spotify@ws: reconnecting - access token expired');
             this.stopPing();
-            await this.ws?.close().catch(() => undefined);
+            await this.ws?.close();
         }, 1000 * 60 * 60);
         // get current track
         queueMicrotask(async () => {
@@ -52,37 +73,31 @@ export class SpotifyClient {
             if(!state) return;
             const data = await this.handleCluster(state);
             if(typeof data !== 'object') return;
-            this.onMessage?.({type: 'StateChanged', data });
+            this.onMessageCallback({type: 'StateChanged', data });
         });
     }
 
+    async handleWsMessage(message: SpotifyWsMessage) {
+        if (message.type !== 'message') return;
 
-    async* messages(): AsyncIterable<OverlayClientEvent<keyof OverlayClientEventMap>> {
-        if (!this.ws || !this.http || !this.cache) return;
-
-        for await (const wsEvent of this.ws) {
-            if (typeof wsEvent !== 'string') continue;
-            const message: SpotifyWsMessage = JSON.parse(wsEvent);
-            if (message.type === 'message') {
-                if (message.method === 'PUT' && message.headers?.['Spotify-Connection-Id']) {
-                    this.http.updateConnectionId(message.headers['Spotify-Connection-Id']);
-                    await this.http.putConnectState();
-                    yield {type: 'Ready', data: undefined};
-                }
-            } else continue;
-            if (!message.payloads) continue;
-
-            for (const {cluster} of message.payloads) {
-                const result = await this.handleCluster(cluster);
-                if (typeof result === 'number') {
-                    if (result === IteratorConsumerCommand.Continue) continue;
-                    else if (result === IteratorConsumerCommand.Exit) return;
-                }
-
-                yield {type: 'StateChanged', data: result};
-            }
+        if (message.method === 'PUT' && message.headers?.['Spotify-Connection-Id']) {
+                this.http.updateConnectionId(message.headers['Spotify-Connection-Id']);
+                await this.http.putConnectState();
+                this.onMessageCallback({type: 'Ready', data: undefined});
+                return;
         }
-        log.debug('End');
+
+        if (!message.payloads) return;
+
+        for (const {cluster} of message.payloads) {
+            const result = await this.handleCluster(cluster);
+            if (typeof result === 'number') {
+                if (result === IteratorConsumerCommand.Continue) continue;
+                else if (result === IteratorConsumerCommand.Exit) return;
+            }
+
+            this.onMessageCallback({type: 'StateChanged', data: result});
+        }
     }
 
     public async handleCluster(cluster?: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
@@ -139,7 +154,7 @@ export class SpotifyClient {
     public async stop(): Promise<void> {
         this.stopped = true;
         this.stopPing();
-        await this.ws?.close().catch(() => undefined);
+        this.ws?.close();
         if (this.timeoutId) clearTimeout(this.timeoutId);
     }
 }

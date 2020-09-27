@@ -44,17 +44,13 @@ export function createBrowserHandler(client: OverlayServer, browserId: number): 
 }
 
 export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spotifyId: number): Reloadable {
-    const spotifyClient = new SpotifyClient(readCookieEnvVar());
-    spotifyClient.onMessage = message => overlayClient.send(message, spotifyId);
+    const spotifyClient = new SpotifyClient(readCookieEnvVar(), message => overlayClient.send(message, spotifyId));
     const spotifyHandler = (() => {
         let die = false;
         return {
             stop: () => die = true, async start() {
                 if (die) return;
-                for await (const message of spotifyClient.messages()) {
-                    if (die) return;
-                    overlayClient.send(message, spotifyId);
-                }
+                await spotifyClient.closePromise;
             }
         };
     })();
