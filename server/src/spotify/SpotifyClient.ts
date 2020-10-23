@@ -1,7 +1,7 @@
 import {APP_VERSION, USER_AGENT} from './constants.ts';
 import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
 import {SpotifyCache} from './SpotifyCache.ts';
-import {connectWebSocket, WebSocket} from 'https://deno.land/std/ws/mod.ts';
+import {connectWebSocket, WebSocket} from 'https://deno.land/std@0.60.0/ws/mod.ts';
 import {SpotifyWsCluster, SpotifyWsMessage} from './ws.types.ts';
 import {getId} from './utilities.ts';
 import {SpotifyTrack} from './http.types.ts';
@@ -31,8 +31,9 @@ export class SpotifyClient {
 
         // TODO: URL
         this.ws = await connectWebSocket(`wss://${this.http.dealer}/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
-            new Headers({'Cookies': this.cookies})
+            //new Headers({'Cookie': this.cookies})
         );
+        log.info(this.http.dealer);
         log.info('Connected to Spotify WebSocket');
     }
 
