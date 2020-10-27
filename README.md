@@ -96,19 +96,14 @@ You don't have to restart the service. You only need to **reload** the overlay.
 
 ### Firefox
 
-Search on addons.mozilla.org for '**Current Song Overlay**'.
+The addon is available on [addons.mozilla.org (click)](https://addons.mozilla.org/firefox/addon/current-song-overlay/).
 
 ### Chrome
 
-Currently, I can't publish the extension to the Chrome WebStore.
-So you'll need to install an unpacked extension in 'Developer Mode'.
+_Note:_ Due to [this 6 year old bug](https://bugs.chromium.org/p/chromium/issues/detail?id=387377),
+ the extension will **always** show the currently playing song as it can't detect a _non focused_ window. 
 
-1. Go to `chrome://extensions`
-2. Enable **Developer Mode** in the top right corner
-3. Click on '**Load Unpacked**'
-4. Navigate to the extension folder and click Open
-
-Now the extension is loaded. **Keep in mind**: Each time you open Chrome, you'll get a popup, saying you've loaded an unpacked extension. You can ignore this warning.
+The addon is available on the [Chrome WebStore (click)](https://chrome.google.com/webstore/detail/currentsong/alanjgmjccmkkpmpejgdhaodfjlmcone).
 
 ## VLC
 
