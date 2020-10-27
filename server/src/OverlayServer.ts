@@ -4,7 +4,7 @@ import {
   OverlayClientEventMap,
   OverlayClientStateChangedEvent,
 } from "./types.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
 export class OverlayServer extends WsServer<
   OverlayClientEvent<keyof OverlayClientEventMap>

@@ -1,6 +1,6 @@
 import {SpotifyTrackResponse} from './http.types.ts';
 import {USER_AGENT, APP_VERSION} from './constants.ts';
-import * as log from 'https://deno.land/std/log/mod.ts';
+import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
 import {jsonFetch, logFetchError} from '../utilities.ts';
 import {SpotifyWsCluster} from './ws.types.ts';
 

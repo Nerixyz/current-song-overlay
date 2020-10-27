@@ -10,7 +10,7 @@ import {
   createSpotifyClientAndHandler,
   createVlcClient,
 } from "./create-handler.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
 const logger = log.getLogger();
 logger.info("\n\n\nStarting Current Song Overlay");

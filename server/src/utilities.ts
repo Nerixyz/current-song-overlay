@@ -1,6 +1,6 @@
-import { config } from 'https://deno.land/x/dotenv/mod.ts';
+import { config } from 'https://deno.land/x/dotenv@v0.5.0/mod.ts';
 config({export: true});
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
 export function splitTitle(title: string): { name: string, artists?: string[] } {
     if (title.includes('-') && !title.match(/\([^()]+-[^()]+\)/)) {
@@ -44,6 +44,11 @@ export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Err
 
 export interface Reloadable {
     stop(): any | Promise<any>;
+
+    /**
+     *
+     * @returns {Promise<void>} resolves/rejects once the reloadable is stopped
+     */
     start(): Promise<void>;
 }
 export function createReloader() {

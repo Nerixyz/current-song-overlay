@@ -1,11 +1,15 @@
-import {APP_VERSION, USER_AGENT} from './constants.ts';
-import {SpotifyHttpApi} from './SpotifyHttpApi.ts';
-import {SpotifyCache} from './SpotifyCache.ts';
-import {SpotifyWsCluster, SpotifyWsMessage} from './ws.types.ts';
-import {getId} from './utilities.ts';
-import {SpotifyTrack} from './http.types.ts';
-import {NormalizedTrack, OverlayClientEvent, OverlayClientEventMap, OverlayClientStateChangedEvent} from '../types.ts';
-import * as log from 'https://deno.land/std/log/mod.ts';
+import { SpotifyHttpApi } from './SpotifyHttpApi.ts';
+import { SpotifyCache } from './SpotifyCache.ts';
+import { SpotifyWsCluster, SpotifyWsMessage } from './ws.types.ts';
+import { getId } from './utilities.ts';
+import { SpotifyTrack } from './http.types.ts';
+import {
+    NormalizedTrack,
+    OverlayClientEvent,
+    OverlayClientEventMap,
+    OverlayClientStateChangedEvent
+} from '../types.ts';
+import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
 
 export class SpotifyClient {
     http: SpotifyHttpApi;
@@ -21,21 +25,18 @@ export class SpotifyClient {
 
     constructor(
         private cookies: string,
-        private onMessageCallback: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void)
-    {
+        private onMessageCallback: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void
+    ) {
         this.http = new SpotifyHttpApi(this.cookies);
         this.cache = new SpotifyCache(this.http);
     }
 
     async connect() {
         await this.http.updateDealerAndSpClient()
-            .catch(e => log.info(`Failed to get dealer and spclient, using defaults: ${e}`));
+            .catch(e => log.info(`Failed to get dealer and spclient, using defaults: ${ e }`));
         await this.http.updateAccessToken();
 
-        // TODO: URL
-        this.ws = new WebSocket(`wss://${this.http.dealer}/?access_token=${encodeURIComponent(this.http.accessToken ?? '')}`,
-            //new Headers({'Cookies': this.cookies})
-        );
+        this.ws = new WebSocket(`wss://${ this.http.dealer }/?access_token=${ encodeURIComponent(this.http.accessToken ?? '') }`);
         this.updateListeners();
         this.closePromise = new Promise(resolve => this.resolveClosePromise = resolve);
     }
@@ -47,12 +48,12 @@ export class SpotifyClient {
             this.resolveClosePromise?.();
         });
         this.ws?.addEventListener('open', () => log.info('Connected to Spotify WebSocket'));
-        this.ws?.addEventListener('message', async ({data}: {data: unknown}) => {
+        this.ws?.addEventListener('message', async ({ data }: { data: unknown }) => {
             try {
                 if (typeof data !== 'string') return;
                 await this.handleWsMessage(JSON.parse(data));
-            }catch (e) {
-                log.error(`spotify@ws-handler: Failed to handle message (${e?.message ?? '<unknown>'})`);
+            } catch (e) {
+                log.error(`spotify@ws-handler: Failed to handle message (${ e?.message ?? '<unknown>' })`);
             }
         });
     }
@@ -63,17 +64,18 @@ export class SpotifyClient {
         this.timeoutId = setTimeout(async () => {
             log.info('spotify@ws: reconnecting - access token expired');
             this.stopPing();
-            await this.ws?.close();
+            this.ws?.close();
         }, 1000 * 60 * 60);
         // get current track
-        queueMicrotask(async () => {
+        // "next tick" - kind of (there's no nextTick)
+        setTimeout(async () => {
             // this returns 'bad_request' which is ok. Why? I don't know. PUT /connect-state/.. works afterwards.
             await this.http?.registerDevice();
             const state = await this.http?.putConnectState();
-            if(!state) return;
+            if (!state) return;
             const data = await this.handleCluster(state);
-            if(typeof data !== 'object') return;
-            this.onMessageCallback({type: 'StateChanged', data });
+            if (typeof data !== 'object') return;
+            this.onMessageCallback({ type: 'StateChanged', data });
         });
     }
 
@@ -81,22 +83,24 @@ export class SpotifyClient {
         if (message.type !== 'message') return;
 
         if (message.method === 'PUT' && message.headers?.['Spotify-Connection-Id']) {
-                this.http.updateConnectionId(message.headers['Spotify-Connection-Id']);
-                await this.http.putConnectState();
-                this.onMessageCallback({type: 'Ready', data: undefined});
-                return;
+            this.http.updateConnectionId(message.headers['Spotify-Connection-Id']);
+            await this.http.putConnectState();
+            this.onMessageCallback({ type: 'Ready', data: undefined });
+            return;
         }
 
         if (!message.payloads) return;
 
-        for (const {cluster} of message.payloads) {
+        for (const { cluster } of message.payloads) {
             const result = await this.handleCluster(cluster);
             if (typeof result === 'number') {
                 if (result === IteratorConsumerCommand.Continue) continue;
-                else if (result === IteratorConsumerCommand.Exit) return;
+                else if (result === IteratorConsumerCommand.Exit) {
+                    return this.ws?.close();
+                }
             }
 
-            this.onMessageCallback({type: 'StateChanged', data: result});
+            this.onMessageCallback({ type: 'StateChanged', data: result });
         }
     }
 
@@ -112,11 +116,11 @@ export class SpotifyClient {
 
         const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
         if (!current) {
-            log.error(`spotify@ws: Failed to get current track: ${JSON.stringify(cluster.player_state)}`);
+            log.error(`spotify@ws: Failed to get current track: ${ JSON.stringify(cluster.player_state) }`);
             return IteratorConsumerCommand.Continue;
         }
         return {
-            current: current ? normalizeTrack(current) : {name: cluster.player_state.track.metadata.title ?? '<doctorWtf>'},
+            current: current ? normalizeTrack(current) : { name: cluster.player_state.track.metadata.title ?? '<doctorWtf>' },
             state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
             position: {
                 currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
@@ -127,22 +131,8 @@ export class SpotifyClient {
         };
     }
 
-    protected async getAccessToken(): Promise<string> {
-        const {accessToken} = await fetch('https://open.spotify.com/get_access_token?reason=transport&productType=web_player', {
-            headers: {
-                'User-Agent': USER_AGENT,
-                'spotify-app-version': APP_VERSION,
-                'app-platform': 'WebPlayer',
-                'Cookie': this.cookies,
-                'Referer': 'https://open.spotify.com/'
-            },
-            method: 'GET',
-        }).then(r => r.json());
-        return accessToken;
-    }
-
     startPing() {
-        this.pingId = setInterval(() => this.ws?.send(JSON.stringify({type: 'ping'})), 60 * 1000);
+        this.pingId = setInterval(() => this.ws?.send(JSON.stringify({ type: 'ping' })), 60 * 1000);
     }
 
     stopPing() {
