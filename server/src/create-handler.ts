@@ -1,11 +1,11 @@
-import {OverlayServer} from './OverlayServer.ts';
-import {WsServer} from './WsServer.ts';
-import {Reloadable, splitTitle, readCookieEnvVar} from './utilities.ts';
-import {SpotifyClient} from './spotify/SpotifyClient.ts';
-import {VlcClient} from './vlc/VlcClient.ts';
-import pogo from 'https://deno.land/x/pogo/main.ts';
-import {BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap} from './types.ts';
-import * as log from 'https://deno.land/std/log/mod.ts';
+import { OverlayServer } from './OverlayServer.ts';
+import { WsServer } from './WsServer.ts';
+import { Reloadable, splitTitle, readCookieEnvVar } from './utilities.ts';
+import { SpotifyClient } from './spotify/SpotifyClient.ts';
+import { VlcClient } from './vlc/VlcClient.ts';
+import { BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap } from './types.ts';
+import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
+import { serve } from './http/serve.ts';
 
 export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
     const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
@@ -84,10 +84,10 @@ export function createVlcClient(overlayClient: OverlayServer, vlcId: number): Re
 
 export function createServer(): Reloadable {
     log.debug(`Serving files on :230`);
-    const server = pogo.server({port: 230});
-    const overlayPath = Deno.env.get('NON_BUILD_ENV') ? 'client/public' : 'overlay';
-    server.router
-        .get('/{file}', (_, h) => h.directory(overlayPath))
-        .get('/', (_, h) => h.file(`${overlayPath}/index.html`));
-    return server;
+    return {
+        start(): Promise<void> {
+           return serve({ port: 230, path: Deno.env.get('NON_BUILD_ENV') ? 'client/public' : 'overlay' });
+        },
+        stop(): any {},
+    };
 }
