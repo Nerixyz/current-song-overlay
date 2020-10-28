@@ -36,9 +36,8 @@
       "run_at": "document_start"
     }
   ],
-  "permissions": [
-    "tabs"
-  ],
+  "web_accessible_resources": ["content-scripts/mediaSessionProxy.inject.js"],
+  "permissions": ["tabs"],
   "browser_specific_settings": {
     "gecko": {
       "id": "{02914143-ede8-492c-8ad4-8a3af03f75bb}",

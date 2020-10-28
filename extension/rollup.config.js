@@ -9,7 +9,8 @@ export default [
     'trackVideoProgress',
     'soundcloud',
     'neverthink',
-    'mediaSessionProxy'
+    'mediaSessionProxy',
+    'mediaSessionProxy.inject'
   ]),
 ].map((file) => ({
   input: `src/${file}.ts`,
