@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
+    "build": "rollup -c -m",
+    "watch": "rollup -c -w -m",
     "serve": "serve public",
     "dev": "npm-run-all --parallel watch serve"
   },

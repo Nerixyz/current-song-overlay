@@ -8,7 +8,8 @@
     "noImplicitAny": true,
     "alwaysStrict": true,
     "strictFunctionTypes": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "inlineSources": true
   },
   "exclude": [
     "node_modules"
