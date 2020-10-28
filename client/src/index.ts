@@ -84,8 +84,9 @@ function handlePositionChanged(event: PositionChangedEvent, dom: SmolDom<MySmolD
 }
 
 function addImageAnimation(image: HTMLImageElement) {
+  let animation: Animation | undefined;
   image.addEventListener('load', () => {
-    image.animate({
+    animation = image.animate({
       opacity: ['0', '1'],
       transform: ['scale(0.8) translateX(-30%)', 'scale(1) translateX(0)'],
     }, {
@@ -93,5 +94,12 @@ function addImageAnimation(image: HTMLImageElement) {
       easing: 'cubic-bezier(0.05, 0.95, 0.735, 1)'
     });
   });
-  image.addEventListener('loadstart', () => image.getAnimations().forEach(a => a.cancel()));
+  image.addEventListener('loadstart', () => {
+    if(image.getAnimations) {
+      image.getAnimations().forEach(a => a.cancel())
+    } else {
+      animation?.cancel();
+      animation = undefined;
+    }
+  });
 }

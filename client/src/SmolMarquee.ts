@@ -4,17 +4,19 @@ export function useMarquee(el: HTMLElement, maxWidth: number, speed: number) {
   const invisibleWrapper = createElement('div', { classes: ['invis'] });
   invisibleWrapper.style.transform = 'scale(0.2)';
   document.documentElement.append(invisibleWrapper);
+  let animation: Animation | undefined;
   const observer = new MutationObserver(() => {
     const clone = el.cloneNode(true);
     invisibleWrapper.append(clone);
-    cancelAllAnimations(el);
+    animation?.cancel();
+    animation = undefined;
     requestAnimationFrame(() => {
       let { width } = invisibleWrapper.getBoundingClientRect();
       width *= 5;
 
       if (width > maxWidth) {
         const animationWidth = maxWidth - width;
-        el.animate([{
+        animation = el.animate([{
           transform: 'translateX(0)',
           opacity: '1',
           easing: 'cubic-bezier(0.3, 0, 0.7, 1)'
@@ -45,6 +47,7 @@ export function useMarquee(el: HTMLElement, maxWidth: number, speed: number) {
   observer.observe(el, { subtree: true, childList: true });
 }
 
-function cancelAllAnimations(el: HTMLElement) {
-  el.getAnimations().forEach(a => a.cancel());
-}
+// TODO: wait for cef to support getAnimations
+// function cancelAllAnimations(el: HTMLElement) {
+//   el.getAnimations().forEach(a => a.cancel());
+// }
