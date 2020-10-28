@@ -23,7 +23,7 @@ function makeOnWsMessage() {
     wrapper: 'current-song',
     progressBar: 'progress-bar',
   }).lookup();
-  const progressAnimation = new ProgressBarAnimation();
+  const progressAnimation = new ProgressBarAnimation(dom.getElement('progressBar'));
   return function onWsMessage(message: MessageEvent) {
     if (typeof message.data !== 'string') {
       console.error('no string');
@@ -79,10 +79,5 @@ function handlePositionChanged(event: PositionChangedEvent, dom: SmolDom<MySmolD
     startSec: event.currentPositionSec,
     speed: event.playbackSpeed,
     startTs: event.startTs,
-    fn: percent => setTransform(dom.getElement('progressBar'), `scaleX(${percent})`),
   });
-}
-
-function setTransform(el: HTMLElement, transform: string) {
-  el.style.transform = transform;
 }
