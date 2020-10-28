@@ -24,6 +24,7 @@ function makeOnWsMessage() {
     progressBar: 'progress-bar',
   }).lookup();
   const progressAnimation = new ProgressBarAnimation(dom.getElement('progressBar'));
+  addImageAnimation(dom.getElement('albumArt'));
   return function onWsMessage(message: MessageEvent) {
     if (typeof message.data !== 'string') {
       console.error('no string');
@@ -80,4 +81,17 @@ function handlePositionChanged(event: PositionChangedEvent, dom: SmolDom<MySmolD
     speed: event.playbackSpeed,
     startTs: event.startTs,
   });
+}
+
+function addImageAnimation(image: HTMLImageElement) {
+  image.addEventListener('load', () => {
+    image.animate({
+      opacity: ['0', '1'],
+      transform: ['scale(0.8) translateX(-30%)', 'scale(1) translateX(0)'],
+    }, {
+      duration: 300,
+      easing: 'cubic-bezier(0.05, 0.95, 0.735, 1)'
+    });
+  });
+  image.addEventListener('loadstart', () => image.getAnimations().forEach(a => a.cancel()));
 }
