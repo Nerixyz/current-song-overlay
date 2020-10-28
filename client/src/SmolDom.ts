@@ -24,6 +24,9 @@ export class SmolDom<T extends Record<string, HTMLElement>> {
     public prop<El extends HTMLElement, Key extends keyof El = keyof El>(prop: Key, config: {[x in keyof T]?: El[Key]}): this {
       if(!this.nodes) return this;
       for(const [key, value] of Object.entries(config)) {
+        // @ts-expect-error -- Key can be used to index nodes
+        const last = this.nodes[key][prop];
+        if(last === value) continue;
         // @ts-expect-error
         this.nodes[key][prop] = value;
       }
