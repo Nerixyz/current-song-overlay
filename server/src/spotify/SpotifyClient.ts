@@ -89,9 +89,9 @@ export class SpotifyClient {
             return;
         }
 
-        if (!message.payloads) return;
+        if (!message.payloads || !this.cache) return;
 
-        for (const { cluster } of message.payloads) {
+        for (const { cluster } of message.payloads.filter(({cluster}) => cluster)) {
             const result = await this.handleCluster(cluster);
             if (typeof result === 'number') {
                 if (result === IteratorConsumerCommand.Continue) continue;
@@ -104,8 +104,7 @@ export class SpotifyClient {
         }
     }
 
-    public async handleCluster(cluster?: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
-        if (!cluster || !this.cache) return IteratorConsumerCommand.Continue;
+    public async handleCluster(cluster: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
         if (!cluster.player_state.track && cluster.player_state.is_playing) {
             log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
             return IteratorConsumerCommand.Exit;
@@ -132,8 +131,16 @@ export class SpotifyClient {
     }
 
     startPing() {
-        this.pingId = setInterval(() => this.ws?.send(JSON.stringify({ type: 'ping' })), 60 * 1000);
+        this.pingId = setInterval(() => this.sendToWs({ type: 'ping' }), 60 * 1000);
     }
+
+    protected sendToWs(obj: any) {
+        if(!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+        this.ws.send(JSON.stringify(obj));
+    }
+
+    // stop functionality
 
     stopPing() {
         clearInterval(this.pingId);
