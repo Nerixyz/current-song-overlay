@@ -1,8 +1,7 @@
+import './extension-api'; // fix chrome
 import { TabChangeHandler } from './TabChangeHandler';
-import { connectWithReconnect, fixChrome } from './utilities';
+import { connectWithReconnect } from './utilities';
 import { InternalMessage, UpdateEventArg, UpdateEventMap, VideoPlayState } from './types';
-
-fixChrome();
 
 (async () => {
   console.log('background');

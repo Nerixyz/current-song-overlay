@@ -1,5 +1,5 @@
 import { VideoPlayState } from '../types';
-import { sendRuntimeMessage } from '../utilities';
+import { sendRuntimeMessage } from '../extension-api';
 
 window.addEventListener('message', async msg => {
   if (!msg.origin.endsWith('youtube.com')) return;

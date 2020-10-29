@@ -1,5 +1,5 @@
-import { sendRuntimeMessage } from '../utilities';
 import { VideoPlayState } from '../types';
+import { sendRuntimeMessage } from '../extension-api';
 
 function changeHandler({target}: {target: unknown}) {
   if(!(target instanceof HTMLVideoElement)) return;

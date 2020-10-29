@@ -2,6 +2,7 @@ import Tab = browser.tabs.Tab;
 import { PlayStateContainer, UpdateEventFn, VideoMetadata, VideoPlayState } from './types';
 import { cleanupTabName, cloneClass } from './utilities';
 import { TabModel } from './TabModel';
+import { getAllWindows } from './extension-api';
 
 enum WindowState {
   normal,
@@ -114,7 +115,7 @@ export class TabChangeHandler {
   }
 
   protected async updateWindowStates() {
-    for (const window of await browser.windows.getAll()) {
+    for (const window of await getAllWindows()) {
       this.windowStates[window.id ?? -1] = WindowState[window.state ?? 'normal'];
     }
   }

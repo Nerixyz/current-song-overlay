@@ -1,5 +1,6 @@
 import { VideoPlayState } from '../types';
-import { sendRuntimeMessage, tryGetElementByClass } from '../utilities';
+import { tryGetElementByClass } from '../utilities';
+import { sendRuntimeMessage } from '../extension-api';
 
 let playState: VideoPlayState | undefined;
 const resetProgress = () => (playState = undefined);

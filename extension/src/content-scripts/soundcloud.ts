@@ -1,5 +1,6 @@
-import { sendRuntimeMessage, tryGetElementByClass } from '../utilities';
+import { tryGetElementByClass } from '../utilities';
 import { VideoPlayState } from '../types';
+import { sendRuntimeMessage } from '../extension-api';
 
 (async () => {
   const progressEl = await tryGetElementByClass<HTMLElement>('playbackTimeline__progressHandle');

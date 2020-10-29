@@ -1,5 +1,3 @@
-import { InternalMessageMap } from './types';
-
 export function cleanupTabName(name?: string) {
   return name?.replace(/(^\([^ ]+\))|(- \w+$)/g, '')?.trim();
 }
@@ -37,17 +35,7 @@ export function connectWithReconnect(url: string): { value?: WebSocket } {
   return obj;
 }
 
-export function fixChrome() {
-  if (!globalThis.browser) {
-    // @ts-ignore -- fix for chrome
-    globalThis.browser = chrome;
-  }
-  tryPromisify(browser.tabs, 'get');
-  tryPromisify(browser.windows, 'getCurrent');
-  tryPromisify(browser.windows, 'getAll');
-}
-
-function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Promise<any> }>(obj: T, key: K) {
+export function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Promise<any> }>(obj: T, key: K) {
   if (obj[key].length === 0) {
     // assume this is chrome
     const base = obj[key];
@@ -84,15 +72,4 @@ export async function tryGetElementByClass<T extends Element>(name: string, fn?:
     fn?.(el[0] as T);
     return el[0] as T;
   }
-}
-
-export function sendRuntimeMessage<T extends keyof InternalMessageMap>(type: T, data: InternalMessageMap[T]) {
-  if (!globalThis.browser) {
-    // @ts-ignore -- fix for chrome
-    globalThis.browser = chrome;
-  }
-  return browser.runtime.sendMessage({
-    type,
-    data
-  })
 }
