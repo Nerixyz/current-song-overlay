@@ -48,6 +48,8 @@ Websites not listed here aren't tested yet but **might** already be supported.
 
 Extract the `build-...zip` into some folder.
 
+**If you've never configured this application, rename `.env.example` to `.env`!**
+
 This application consists of multiple "modules" you can toggle.
 You can enable and disable modules in the `.env` file (open it with any text editor).
 

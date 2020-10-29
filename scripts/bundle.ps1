@@ -47,7 +47,7 @@ Copy-Item "extension\dist\build\*" "build\extension" -Recurse | Out-Null;
 # Copy the env-vars
 Write-Debug "Adding env vars";
 
-Copy-Item ".env.example" "build\.env" | Out-Null;
+Copy-Item ".env.example" "build\.env.example" | Out-Null;
 
 Copy-Item "README.md" "build\README.md" | Out-Null;
 
