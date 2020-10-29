@@ -36,6 +36,7 @@ export function connectWithReconnect(url: string): { value?: WebSocket } {
 }
 
 export function tryPromisify<K extends string, T extends { [x in K]: (arg: any) => Promise<any> }>(obj: T, key: K) {
+  if (obj === undefined) return;
   if (obj[key].length === 0) {
     // assume this is chrome
     const base = obj[key];
