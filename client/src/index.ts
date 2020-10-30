@@ -1,10 +1,10 @@
-import { connectWithReconnect, getCSSVariable } from './utilities';
+import { connectWithReconnect, getCSSVariable, polyfillGetAnimations } from './utilities';
 import { ProgressBarAnimation } from './progress-bar-animation';
 import { SmolDom } from './SmolDom';
 import { MySmolDom, PositionChangedEvent, StateChangedEvent, WsMessage, WsMessageMap } from './types';
 import { useMarquee } from './SmolMarquee';
 
-
+polyfillGetAnimations();
 const songInfoMaxWidth = getCSSVariable('song-info-max-width').replace(/[^\d]/g, '');
 const titleEl = document.getElementById('song-title');
 if(!titleEl) throw new Error('No title el saj');

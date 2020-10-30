@@ -44,3 +44,25 @@ export function createElement(type: string, options: {id?: string, classes?: str
   return el;
 }
 
+export function polyfillGetAnimations() {
+  if(!Element.prototype.getAnimations) {
+    const baseFn = Element.prototype.animate;
+    const Animations = Symbol('animations');
+    Element.prototype.animate = function(...args) {
+      const ret = baseFn.apply(this, args);
+      // @ts-ignore -- indexing is allowed
+      const animations: Set<Animation> = (this[Animations] ??= new Set());
+      animations.add(ret);
+      ret.addEventListener('cancel', () => animations.delete(ret));
+
+      return ret;
+    };
+    Element.prototype.getAnimations = function() {
+      // @ts-ignore
+      const animations: Set<Animation> | undefined = this[Animations];
+
+      return animations ? Array.from(animations) : [];
+    }
+  }
+}
+
