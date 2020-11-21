@@ -37,7 +37,7 @@ export class ProgressBarAnimation {
     }, {
       transform: `scaleX(1)`,
     }], {
-      duration: this.getRemainingTimeSec() * 1000,
+      duration: (this.getRemainingTimeSec() * 1000) / (this.data?.speed ?? 1),
     });
     this.animation.addEventListener('finish', () => this.onProgressAnimationFinished());
   }
