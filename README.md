@@ -15,9 +15,9 @@ Maybe I'll change that.
 
 ### Main Features
 
-- It's one of the first _true_ **realtime** clients for Spotify and YouTube (VLC does not provide a realtime API).
+- It's one of the first _true_ **realtime** clients for Spotify and YouTube (VLC is using the most lightweight option to use all features, a Lua interface).
   The local server **does not** constantly poll Spotify and YouTube.
-- Watch progress is shown for Spotify _and_ YouTube (others to come).
+- Watch progress is shown for Spotify, YouTube _and_ VLC (others to come).
 - The server can be ran as a **Windows Service** so won't show up as a window and is started once the PC starts.
 - It always tries to show the last updated source so viewers immediately know the song.
 - The overlay is _fully customizable_ through the `config.css` file in the `overlay` directory.
@@ -26,7 +26,7 @@ Maybe I'll change that.
 
 - Firefox, Chrome, new Safari (and other Browsers implementing the [WebExtensions API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs))
 - Spotify (requires a Cookie to work, any device is supported)
-- VLC (RC-Interface)
+- VLC (Lua Interface)
 
 ## Supported Websites
 
@@ -48,20 +48,16 @@ Websites not listed here aren't tested yet but **might** already be supported.
 
 Extract the `build-...zip` into some folder.
 
-**If you've never configured this application, rename `.env.example` to `.env`!**
+**If you've never used this application, run `start.bat` once until it says `INFO: Serving static files`!** (quit with `CTRL + C`)
 
 This application consists of multiple "modules" you can toggle.
-You can enable and disable modules in the `.env` file (open it with any text editor).
-
-Once you configured the `.env` file, you can start the application, or create a service which runs all the time, so you don't have to care about it.
-_Pro tip_: Create a backup of your `.env` file, so you don't replace it by accident.
-To set up the service,
+The main configuration can be found in `config.json`.
 
 1. Run `create-service.bat` **as Administrator** (right click the file and select `Run as Administrator`).
    _Note:_ your AntiVirus might question this action or block it.
 2. Start the service by running `start-service.bat` **as Administrator**.
 
-You can restart the service (needed once you've changed `.env`).
+You can restart the service (needed once you've changed `.env` or `config.json`).
 
 You are also able to change the appearance of the overlay. To do this, open the `config.css` in the `overlay` directory.
 You don't have to restart the service. You only need to **reload** the overlay.
@@ -74,7 +70,23 @@ You don't have to restart the service. You only need to **reload** the overlay.
 2. Open the `.env` file in the current folder
 3. Paste **the value** next to `SPOTIFY_COOKIES="sp_dc=`
 4. The line should now look like this: `SPOTIFY_COOKIES="sp_dc=AB3DE6...-A2CD5FG..."`
-5. Set `ENABLE_SPOTIFY=true` (previously `...=false`)
+5. Make sure the `spotify` module is enabled and configured in your `config.json`:
+```json
+{
+  "modules": {
+    ...
+    "spotify": {
+      "enabled": true,
+      "options": {
+        "cookies": ":env#SPOTIFY_COOKIES"
+      }
+    },
+    ...
+  }
+  ...
+}
+```
+`:env#SPOTIFY_COOKIES` will read the variable `SPOTIFY_COOKIES` into `cookies`
 
 ### Chrome
 
@@ -111,9 +123,8 @@ The addon is available on the [Chrome WebStore (click)](https://chrome.google.co
 
 1. Press `CTRL + P` (opens the settings)
 2. select `All` in the bottom left corner to show all settings
-3. Go to `Interface` > `Main Interface` > `RC`
-4. Set the TCP Command Input to `localhost:234`
-5. Restart VLC
+
+// TODO: lua script
 
 # Examples
 
@@ -138,7 +149,7 @@ The addon is available on the [Chrome WebStore (click)](https://chrome.google.co
   Define the `NON_BUILD_ENV` environment variable (the value doesn't matter, use e.g. 1) and run the server.
 
 - **Extension**
-  Run `npm i` or `yarn` and run the script `rollup-watch`.
+  Run `npm i` and run the script `rollup-watch`.
   You can import the extension in Firefox in `about:debugging#/runtime/this-firefox`.
 
 - **Server**

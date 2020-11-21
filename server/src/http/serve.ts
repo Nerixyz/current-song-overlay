@@ -2,6 +2,36 @@ import { listenAndServe } from 'https://deno.land/std@0.75.0/http/server.ts';
 import type { Response, ServerRequest } from 'https://deno.land/std@0.75.0/http/server.ts';
 import { normalize, join as pathJoin, extname } from 'https://deno.land/std@0.75.0/path/mod.ts';
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import { randomHexString, RingBuffer } from '../utilities.ts';
+
+export class StaticFileMapSingleton {
+
+    protected knownPaths = new Map<string, string>();
+    protected tokenBuffer = new RingBuffer<string>(20);
+
+    private static _instance?: StaticFileMapSingleton;
+    static instance(): StaticFileMapSingleton {
+        if(StaticFileMapSingleton._instance) return StaticFileMapSingleton._instance;
+
+        StaticFileMapSingleton._instance = new StaticFileMapSingleton();
+        return StaticFileMapSingleton._instance;
+    }
+
+    public add(url: string) {
+        if(url.startsWith('file:///')) url = url.substring('file:///'.length);
+
+        const id = randomHexString(20);
+        this.knownPaths.set(id, url);
+        const toRemove = this.tokenBuffer.push(id);
+        if(toRemove) this.knownPaths.delete(toRemove);
+
+        return id;
+    }
+
+    public resolve(id: string): string | undefined {
+        return this.knownPaths.get(id);
+    }
+}
 
 const MEDIA_TYPES: Record<string, string> = {
     '.md': 'text/markdown',
@@ -42,7 +72,7 @@ async function handle(req: ServerRequest, root: string): Promise<Response> {
     };
     if (req.method !== 'GET') return { status: 400, body: JSON.stringify({ error: 'Expected GET request' }) };
 
-    const toServe = pathJoin(root, normalizeURL(req.url));
+    const toServe = resolve(root, req.url);
     log.debug(`serving: ${toServe}`);
 
     const notFound = (): Response => ({
@@ -68,6 +98,16 @@ async function handle(req: ServerRequest, root: string): Promise<Response> {
         log.warning(`serve: failed(${e.message ?? '<no message>'}) => 404`);
         return notFound();
     }
+}
+
+function resolve(root: string, url: string) {
+    if(url.startsWith('/token.')) {
+        const resolver = StaticFileMapSingleton.instance();
+        const [,id] = url.match(/^\/token\.([0-9a-fA-F]+)/) ?? [];
+        const resolved = resolver.resolve(id);
+        if(resolved) return resolved;
+    }
+    return pathJoin(root, normalizeURL(url));
 }
 
 function normalizeURL(url: string): string {

@@ -12,8 +12,10 @@ export class VlcServer {
 
     onMessage?: (state: VlcServerState) => void;
 
+    constructor(protected readonly options: VlcOptions) {}
+
     async start() {
-        this.listener = Deno.listen({port: 235});
+        this.listener = Deno.listen({ port: this.options.port ?? 235 });
         for await(const conn of this.listener) {
             log.debug(`:235 - new connection: ${(conn.remoteAddr as Deno.NetAddr).port}`);
             this.handleConn(conn as Connection).catch(e => {
@@ -69,4 +71,9 @@ export interface VlcServerStateData {
     position: number;
     duration: number;
     rate: number;
+    artwork_url?: string;
+}
+
+export interface VlcOptions {
+    port?: number;
 }
