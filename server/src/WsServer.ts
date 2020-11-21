@@ -28,7 +28,8 @@ export class WsServer<MsgType = unknown> {
     async start() {
         this.sockets = [];
         log.debug(`:${this.port} - listening`);
-        for await (const req of serve({port: this.port})) {
+        this.server = serve({port: this.port});
+        for await (const req of this.server) {
             const {conn, r: bufReader, w: bufWriter, headers} = req;
             log.debug(`:${this.port} - new connection from ${headers.get('user-agent')}`);
             acceptWebSocket({

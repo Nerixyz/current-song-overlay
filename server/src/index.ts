@@ -8,8 +8,8 @@ import {
   createBrowserHandler,
   createServer,
   createSpotifyClientAndHandler,
-  createVlcClient,
-} from "./create-handler.ts";
+  createVlcClient, createVlcServer,
+} from './create-handler.ts';
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
 const logger = log.getLogger();
@@ -44,12 +44,20 @@ if (readEnableEnvVar("spotify")) {
 
 if (readEnableEnvVar("vlc")) {
   logger.info("Using VlcHandler");
+  // promises.push(
+  //   reloader.start(
+  //     createVlcClient(clientServer, clientServer.createChannel()),
+  //     undefined,
+  //     "VlcHandler"
+  //   )
+  // );
+
   promises.push(
-    reloader.start(
-      createVlcClient(clientServer, clientServer.createChannel()),
-      undefined,
-      "VlcHandler"
-    )
+      reloader.start(
+          createVlcServer(clientServer, clientServer.createChannel()),
+          undefined,
+          "VlcHandler"
+      )
   );
 }
 

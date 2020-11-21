@@ -3,9 +3,10 @@ import { WsServer } from './WsServer.ts';
 import { Reloadable, splitTitle, readCookieEnvVar } from './utilities.ts';
 import { SpotifyClient } from './spotify/SpotifyClient.ts';
 import { VlcClient } from './vlc/VlcClient.ts';
-import { BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap } from './types.ts';
+import { BrowserActiveEvent, NormalizedTrack, UpdateBrowserEventArg, UpdateBrowserEventMap } from './types.ts';
 import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
 import { serve } from './http/serve.ts';
+import { VlcServer, VlcServerStateData } from './vlc/VlcServer.ts';
 
 export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
     const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
@@ -62,6 +63,47 @@ export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spot
         async stop() {
             spotifyHandler.stop();
             await spotifyClient.stop();
+        }
+    };
+}
+
+export function createVlcServer(overlayClient: OverlayServer, vlcId: number): Reloadable {
+
+    const createCurrentTrack = ({title, artist, file}: VlcServerStateData): NormalizedTrack => {
+        if(!title) {
+            return artist ? {artists: [artist], name: file} : {name: file};
+        }
+        return artist ? {name: title, artists: [artist]} : splitTitle(title);
+    }
+
+    const vlcServer = new VlcServer();
+    vlcServer.onMessage = state => {
+        if(state.state !== 'playing') {
+            overlayClient.send({type: 'StateChanged', data: {
+                state: 'paused'
+                }}, vlcId);
+        } else {
+            overlayClient.send({
+                type: 'StateChanged',
+                data: {
+                    state: 'playing',
+                    position: {
+                        maxPositionSec: state.duration,
+                        playbackSpeed: state.rate,
+                        currentPositionSec: state.position,
+                        startTs: Date.now(),
+                    },
+                    current: createCurrentTrack(state)
+                }
+            }, vlcId)
+        }
+    };
+    return {
+        async start(): Promise<void> {
+            await vlcServer.start()
+        },
+        async stop() {
+            vlcServer.stop();
         }
     };
 }
