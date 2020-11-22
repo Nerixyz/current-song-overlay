@@ -48,7 +48,7 @@ Websites not listed here aren't tested yet but **might** already be supported.
 
 Extract the `build-...zip` into some folder.
 
-**If you've never used this application, run `start.bat` once until it says `INFO: Serving static files`!** (quit with `CTRL + C`)
+**If you've never used this application, run `setup.bat`**
 
 This application consists of multiple "modules" you can toggle.
 The main configuration can be found in `config.json`.
@@ -121,10 +121,8 @@ The addon is available on the [Chrome WebStore (click)](https://chrome.google.co
 
 ## VLC
 
-1. Press `CTRL + P` (opens the settings)
-2. select `All` in the bottom left corner to show all settings
-
-// TODO: lua script
+1. Run the file `setup.bat`. If you have a regular VLC setup, the vlc module will work.
+2. Make sure `vlc` is enabled in your config file
 
 # Examples
 
