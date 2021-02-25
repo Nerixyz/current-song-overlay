@@ -1,5 +1,3 @@
-import { config } from 'https://deno.land/x/dotenv@v0.5.0/mod.ts';
-config({export: true});
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
 export function splitTitle(title: string): { name: string, artists?: string[] } {
@@ -109,5 +107,25 @@ export function logFetchError(loggerFn: (arg: string) => void, operation: string
     };
 }
 
+export class RingBuffer<T> {
+    private readonly data: Array<T | undefined>;
+    private ptr = 0;
+
+    constructor(public readonly length: number) {
+        this.data = [...new Array(length)];
+    }
+
+    public push(item: T): T | undefined {
+        const prev = this.data[this.ptr];
+        this.ptr = (this.ptr + 1) % this.length;
+        this.data[this.ptr] = item;
+
+        return prev;
+    }
+}
+
+export function randomHexString(length: number) {
+    return [...new Array(length)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+}
 
 

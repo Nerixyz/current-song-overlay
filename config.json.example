@@ -1,0 +1,15 @@
+{
+  "modules": {
+    "vlc": true,
+    "spotify": {
+      "enabled": true,
+      "options": {
+        "cookies": ":env#SPOTIFY_COOKIES"
+      }
+    },
+    "browser": true
+  },
+  "websocketPort": 231,
+  "overlayPort": 230,
+  "overlayEnabled": true
+}

@@ -3,12 +3,15 @@ import { WsServer } from './WsServer.ts';
 import { Reloadable, splitTitle, readCookieEnvVar } from './utilities.ts';
 import { SpotifyClient } from './spotify/SpotifyClient.ts';
 import { VlcClient } from './vlc/VlcClient.ts';
-import { BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap } from './types.ts';
+import { BrowserActiveEvent, NormalizedTrack, UpdateBrowserEventArg, UpdateBrowserEventMap } from './types.ts';
 import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
-import { serve } from './http/serve.ts';
+import { serve, StaticFileMapSingleton } from './http/serve.ts';
+import { VlcServer, VlcServerStateData } from './vlc/VlcServer.ts';
+import { getModuleOptions, getVarOrDefault } from './config.ts';
 
 export function createBrowserHandler(client: OverlayServer, browserId: number): Reloadable {
-    const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(232, false);
+    const browserConfig = getModuleOptions('browser');
+    const browserServer = new WsServer<UpdateBrowserEventArg<keyof UpdateBrowserEventMap>>(browserConfig.port ?? 232, false);
     browserServer.onMessage = event => {
         if (event.type === 'Active') {
             const data = event.data as BrowserActiveEvent;
@@ -43,7 +46,9 @@ export function createBrowserHandler(client: OverlayServer, browserId: number): 
     return browserServer;
 }
 
-export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spotifyId: number): Reloadable {
+export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spotifyId: number): Reloadable | undefined {
+    const spotifyOptions = getModuleOptions('spotify');
+    if(!spotifyOptions.cookies || spotifyOptions.cookies.endsWith('=')) return undefined;
     const spotifyClient = new SpotifyClient(readCookieEnvVar(), message => overlayClient.send(message, spotifyId));
     const spotifyHandler = (() => {
         let die = false;
@@ -66,27 +71,59 @@ export function createSpotifyClientAndHandler(overlayClient: OverlayServer, spot
     };
 }
 
-export function createVlcClient(overlayClient: OverlayServer, vlcId: number): Reloadable {
-    const vlcClient = new VlcClient('localhost:234');
-    vlcClient.onMessage = msg => {
-        overlayClient.send({
-            type: 'StateChanged', data: {
-                state: msg.state as any,
-                current: {
-                    name: msg.info.name ?? '',
-                    artists: msg.info.artists
+export function createVlcServer(overlayClient: OverlayServer, vlcId: number): Reloadable {
+    const createCurrentTrack = ({title, artist, file}: VlcServerStateData): NormalizedTrack => {
+        if(!title) {
+            return artist ? {artists: [artist], name: file } : {name: file};
+        }
+        return artist ? {name: title, artists: [artist]} : splitTitle(title);
+    }
+    const vlcOptions = getModuleOptions('vlc');
+    const vlcServer = new VlcServer(vlcOptions);
+    vlcServer.onMessage = state => {
+        if(state.state !== 'playing') {
+            overlayClient.send({type: 'StateChanged', data: {
+                state: 'paused'
+                }}, vlcId);
+        } else {
+            console.log(state.artwork_url)
+            overlayClient.send({
+                type: 'StateChanged',
+                data: {
+                    state: 'playing',
+                    position: {
+                        maxPositionSec: state.duration,
+                        playbackSpeed: state.rate,
+                        currentPositionSec: state.position,
+                        startTs: Date.now(),
+                    },
+                    current: {
+                        ...createCurrentTrack(state),
+                        albumImageUrl: state.artwork_url &&
+                            (state.artwork_url.startsWith('http')
+                                ? state.artwork_url
+                                : `/token.${StaticFileMapSingleton.instance().add(state.artwork_url)}`),
+                    }
                 }
-            }
-        }, vlcId);
+            }, vlcId)
+        }
     };
-    return vlcClient;
+    return {
+        async start(): Promise<void> {
+            await vlcServer.start()
+        },
+        async stop() {
+            vlcServer.stop();
+        }
+    };
 }
 
 export function createServer(): Reloadable {
+    const port = getVarOrDefault('overlayPort', 230)
     log.debug(`Serving files on :230`);
     return {
         start(): Promise<void> {
-           return serve({ port: 230, path: Deno.env.get('NON_BUILD_ENV') ? 'client/public' : 'overlay' });
+           return serve({ port, path: Deno.env.get('NON_BUILD_ENV') ? 'client/public' : 'overlay' });
         },
         stop(): any {},
     };
