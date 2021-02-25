@@ -45,9 +45,10 @@ Write-Output "Adding extension";
 Copy-Item "extension\dist\build\*" "build\extension" -Recurse | Out-Null;
 
 # Copy the env-vars
-Write-Output "Adding env vars";
+Write-Output "Adding env vars and config";
 
 Copy-Item "config.json.example" "build\config.json.example" | Out-Null;
+Copy-Item ".env.example" "build\.env.example" | Out-Null;
 
 Copy-Item "README.md" "build\README.md" | Out-Null;
 
