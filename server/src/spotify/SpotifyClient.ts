@@ -76,7 +76,7 @@ export class SpotifyClient {
             // this returns 'bad_request' which is ok. Why? I don't know. PUT /connect-state/.. works afterwards.
             await this.http?.registerDevice();
             const state = await this.http?.putConnectState();
-            if (!state) return;
+            if (!state?.player_state) return;
             const data = await this.handleCluster(state);
             if (typeof data !== 'object') return;
             this.onMessageCallback({ type: 'StateChanged', data });
