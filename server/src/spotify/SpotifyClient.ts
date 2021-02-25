@@ -91,7 +91,7 @@ export class SpotifyClient {
 
         if (!message.payloads || !this.cache) return;
 
-        for (const { cluster } of message.payloads.filter(({cluster}) => cluster)) {
+        for (const { cluster } of message.payloads.filter(({cluster}) => cluster?.player_state)) {
             const result = await this.handleCluster(cluster);
             if (typeof result === 'number') {
                 if (result === IteratorConsumerCommand.Continue) continue;
