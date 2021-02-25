@@ -109,7 +109,7 @@ export class SpotifyClient {
     }
 
     public async handleCluster(cluster: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
-        if (!cluster.player_state.track && cluster.player_state.is_playing) {
+        if (!cluster?.player_state?.track && cluster?.player_state?.is_playing) {
             log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
             return IteratorConsumerCommand.Exit;
         }
