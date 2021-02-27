@@ -1,5 +1,5 @@
-import { SpotifyOptions } from './spotify/SpotifyClient.ts';
-import { VlcOptions } from './vlc/VlcServer.ts';
+import { SpotifyOptions } from '../spotify/SpotifyClient.ts';
+import { VlcOptions } from '../vlc/VlcServer.ts';
 
 export interface Config {
     modules: {[K in keyof ModuleOptions]?: boolean | Module<ModuleOptions[K]>};
