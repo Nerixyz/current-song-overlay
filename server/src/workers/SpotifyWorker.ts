@@ -31,7 +31,7 @@ const handler = new MessageHandler<SpotifyEvents>(self as any);
             }
           })
         });
-        await client.connect();
+        await client.start();
         if(await Promise.race([exitPromise, client.closePromise]) === 'exit') {
           break;
         }
