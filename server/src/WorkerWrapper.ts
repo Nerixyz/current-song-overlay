@@ -4,7 +4,7 @@ import { MessageHandler } from './workers/MessageHandler.ts';
 
 const urlBase = import.meta.url.replace(/WorkerHandler.ts$/, '');
 
-export class WorkerHandler<Events extends Record<string, any>> {
+export class WorkerWrapper<Events extends Record<string, any>> {
   protected worker!: Worker;
 
   readonly events!: MessageHandler<Events>;

@@ -5,7 +5,7 @@ import {
 } from './types.ts';
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 import { SongSourceEvents } from './workers/events/SongSource.ts';
-import { WorkerHandler } from './WorkerHandler.ts';
+import { WorkerWrapper } from './WorkerWrapper.ts';
 
 export class OverlayServer extends WsServer<
   OverlayClientEvent<keyof OverlayClientEventMap>
@@ -58,8 +58,8 @@ export class OverlayServer extends WsServer<
     log.debug(`(${channelId}) Sending ${stringifyState(event)}`);
   }
 
-  registerWorker(handler: WorkerHandler<any>) {
-    handler = handler as WorkerHandler<SongSourceEvents>; // TS doesn't want this as a parameter
+  registerWorker(handler: WorkerWrapper<any>) {
+    handler = handler as WorkerWrapper<SongSourceEvents>; // TS doesn't want this as a parameter
 
     const id = this.createChannel();
     handler.events.on('playing', event => this.onPlay(id, event));
