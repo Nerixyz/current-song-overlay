@@ -10,8 +10,6 @@ export interface OverlayClientEventMap {
 
 export interface OverlayClientStateChangedEvent {
     current?: NormalizedTrack;
-    previous?: NormalizedTrack;
-    next?: NormalizedTrack;
     state: 'playing' | 'paused' | 'unknown';
     position?: OverlayPositionChangedEvent;
 }

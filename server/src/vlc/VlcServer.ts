@@ -15,7 +15,7 @@ export class VlcServer {
     constructor(protected readonly options: VlcOptions) {}
 
     async start() {
-        this.listener = Deno.listen({ port: this.options.port ?? 235 });
+        this.listener = self.Deno.listen({ port: this.options.port ?? 235 });
         for await(const conn of this.listener) {
             log.debug(`:235 - new connection: ${(conn.remoteAddr as Deno.NetAddr).port}`);
             this.handleConn(conn as Connection).catch(e => {

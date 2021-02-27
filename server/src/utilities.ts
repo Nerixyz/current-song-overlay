@@ -1,16 +1,20 @@
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
 
-export function splitTitle(title: string): { name: string, artists?: string[] } {
+export function splitTitle(title: string): { title: string, artists?: string[] } {
     if (title.includes('-') && !title.match(/\([^()]+-[^()]+\)/)) {
         const [first, ...second] = title.split('-');
-        return {artists: [first], name: second.join(' ')};
+        return {artists: [first], title: second.join(' ')};
     } else if (title.includes('by')) {
         // used by SoundCloud
         const [first, ...second] = title.split('by');
-        return {artists: [second.join(' ')], name: first};
+        return {artists: [second.join(' ')], title: first};
     } else {
-        return {name: title};
+        return {title: title};
     }
+}
+
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export function autoReconnect(startFn: () => Promise<unknown>, onError?: (e: Error) => void, name = '<unknown work>'): [() => Promise<void>, () => void] {

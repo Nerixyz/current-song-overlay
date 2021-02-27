@@ -2,55 +2,83 @@ import { WsServer } from "./WsServer.ts";
 import {
   OverlayClientEvent,
   OverlayClientEventMap,
-  OverlayClientStateChangedEvent,
 } from "./types.ts";
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
-
-
+import { PlayingEvent, SongSourceEvents } from './workers/events/SongSource.ts';
+import { WorkerHandler } from './WorkerHandler.ts';
 
 export class OverlayServer extends WsServer<
   OverlayClientEvent<keyof OverlayClientEventMap>
 > {
   protected channelIdx = 0;
-  protected channelStatuses: OverlayClientStateChangedEvent[] = [];
+  protected channelStatuses = new Map<number, PlayingEvent>();
   protected lastStatusSender?: number;
 
   constructor(port: number) {
     super(port, true);
   }
 
-  send(
-    event: OverlayClientEvent<keyof OverlayClientEventMap>,
-    channelId: number
-  ) {
-    if (event.type === "StateChanged") {
-      const data = event.data as OverlayClientStateChangedEvent;
-      const actualChannelId = channelId;
-      if (data?.state !== "playing") {
-        if (this.lastStatusSender !== undefined) {
-          const nextAudibleId = findLastIndex(
-            this.channelStatuses,
-            (x, i) => x?.state === "playing" && i !== channelId
-          );
-          if (nextAudibleId !== -1) {
-            event.data = this.channelStatuses[nextAudibleId];
-            channelId = nextAudibleId;
-            log.debug(
-              `(${channelId}) Falling back from ${actualChannelId} to ${channelId}`
-            );
-          } else {
-            log.debug(`(${channelId}) Tried falling back; no audible source`);
-          }
-        } else {
-          log.debug(`(${channelId}) Tried falling back; lastStatusSender is undefined`);
-        }
-      } else {
-        log.debug(`(${channelId}) Sending ${stringifyState(data)}`);
+  sendPlaying({song, playPosition}: PlayingEvent) {
+    this.sendToAll({
+      type: 'StateChanged',
+      data: {
+        current: {
+          name: song.title,
+          albumImageUrl: song.cover,
+          artists: song.artists,
+        },
+        position: playPosition && {
+          playbackSpeed: playPosition.rate ?? 1,
+          currentPositionSec: playPosition.position,
+          startTs: playPosition.startTs,
+          maxPositionSec: playPosition.duration
+        },
+        state: 'playing'
       }
-      this.lastStatusSender = channelId;
-      this.channelStatuses[actualChannelId] = data;
+    });
+  }
+
+  sendPaused() {
+    this.sendToAll({
+      type: 'StateChanged',
+      data: {
+        state: 'paused'
+      }
+    });
+  }
+
+  onPause(channelId: number) {
+    this.channelStatuses.delete(channelId);
+    // fast path
+    if(this.lastStatusSender === undefined) {
+      log.debug(`(${channelId}) Tried falling back; lastStatusSender is undefined`);
+      return this.sendPaused();
     }
-    this.sendToAll(event);
+
+    const nextAudible = first(this.channelStatuses.entries());
+    if(!nextAudible) {
+      log.debug(`(${channelId}) Tried falling back; no audible source`);
+      return;
+    }
+    const [audibleId, data] = nextAudible;
+    this.lastStatusSender = audibleId;
+    this.sendPlaying(data);
+    log.debug(`(${channelId}) Falling back from ${channelId} to ${audibleId}`);
+  }
+
+  onPlay(channelId: number, event: PlayingEvent) {
+    this.channelStatuses.set(channelId, event);
+    this.lastStatusSender = channelId;
+    this.sendPlaying(event);
+    log.debug(`(${channelId}) Sending ${stringifyState(event)}`);
+  }
+
+  registerWorker(handler: WorkerHandler<any>) {
+    handler = handler as WorkerHandler<SongSourceEvents>; // TS doesn't want this as a parameter
+
+    const id = this.createChannel();
+    handler.events.on('playing', event => this.onPlay(id, event));
+    handler.events.on('paused', () => this.onPause(id));
   }
 
   createChannel(): number {
@@ -58,26 +86,17 @@ export class OverlayServer extends WsServer<
   }
 }
 
-function findLastIndex<T>(
-  arr: T[],
-  predicate: (item: T, index: number) => boolean
-): number | -1 {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (predicate(arr[i], i)) return i;
-  }
-  return -1;
+function first<T>(iter: Iterator<T>): T | undefined {
+  return iter.next().value;
 }
 
-function stringifyState(data: OverlayClientStateChangedEvent) {
+function stringifyState({playPosition, song: {title, artists}}: PlayingEvent) {
   return (
-    `[${data.state}]` +
-    (data.current
-      ? ` current { name: '${
-          data.current.name
-        }' artists: '${data.current.artists?.join(", ") ?? ''}' }`
-      : "") +
-    (data.position
-      ? ` position { pos: ${data.position.currentPositionSec} speed: ${data.position.playbackSpeed} duration: ${data.position.maxPositionSec} ts: ${data.position.startTs} }`
+    `[Playing] Current(title: '${
+          title
+        }' artists: '${artists?.join(", ") ?? ''}')` +
+    (playPosition
+      ? ` Position(pos: ${playPosition.position} speed: ${playPosition.rate ?? 1} duration: ${playPosition.duration} ts: ${playPosition.startTs})`
       : "")
   );
 }

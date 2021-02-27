@@ -29,7 +29,7 @@ export class SpotifyClient {
 
     constructor(
         private cookies: string,
-        private onMessageCallback: (message: OverlayClientEvent<keyof OverlayClientEventMap>) => void
+        private stateChanged: (message: OverlayClientStateChangedEvent) => void
     ) {
         this.http = new SpotifyHttpApi(this.cookies);
         this.cache = new SpotifyCache(this.http);
@@ -79,7 +79,7 @@ export class SpotifyClient {
             if (!state?.player_state) return;
             const data = await this.handleCluster(state);
             if (typeof data !== 'object') return;
-            this.onMessageCallback({ type: 'StateChanged', data });
+            this.stateChanged(data);
         });
     }
 
@@ -89,7 +89,6 @@ export class SpotifyClient {
         if (message.method === 'PUT' && message.headers?.['Spotify-Connection-Id']) {
             this.http.updateConnectionId(message.headers['Spotify-Connection-Id']);
             await this.http.putConnectState();
-            this.onMessageCallback({ type: 'Ready', data: undefined });
             return;
         }
 
@@ -104,7 +103,7 @@ export class SpotifyClient {
                 }
             }
 
-            this.onMessageCallback({ type: 'StateChanged', data: result });
+            this.stateChanged(result);
         }
     }
 

@@ -17,10 +17,10 @@ export class StaticFileMapSingleton {
         return StaticFileMapSingleton._instance;
     }
 
-    public add(url: string) {
+    public add(url: string, id?: string) {
         if(url.startsWith('file:///')) url = url.substring('file:///'.length);
 
-        const id = randomHexString(20);
+        id ??= randomHexString(20);
         this.knownPaths.set(id, url);
         const toRemove = this.tokenBuffer.push(id);
         if(toRemove) this.knownPaths.delete(toRemove);
