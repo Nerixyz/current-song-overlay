@@ -1,3 +1,5 @@
+import setupLogging from '../logging.ts';
+const stopLogging = await setupLogging('browser');
 import { MessageHandler } from './MessageHandler.ts';
 import { BrowserEvents } from './events/Browser.ts';
 import { WsServer } from '../WsServer.ts';
@@ -52,4 +54,5 @@ const handler = new MessageHandler<BrowserEvents>(self as any);
     }
   };
   await browserServer.start();
+  stopLogging();
 })();

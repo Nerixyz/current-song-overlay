@@ -1,3 +1,5 @@
+import setupLogging from '../logging.ts';
+const stopLogging = await setupLogging('spotify');
 import { MessageHandler } from './MessageHandler.ts';
 import { SpotifyEvents } from './events/Spotify.ts';
 import { SpotifyClient } from '../spotify/SpotifyClient.ts';
@@ -27,4 +29,5 @@ const handler = new MessageHandler<SpotifyEvents>(self as any);
         await sleep(5000);
       }
     }
+    stopLogging();
 })();

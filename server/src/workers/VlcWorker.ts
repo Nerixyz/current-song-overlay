@@ -1,3 +1,5 @@
+import setupLogging from '../logging.ts';
+const stopLogging = await setupLogging('vlc');
 import { VlcServer, VlcServerStateData } from '../vlc/VlcServer.ts';
 import { MessageHandler } from "./MessageHandler.ts";
 import { VlcEvents } from './events/Vlc.ts';
@@ -29,6 +31,7 @@ const handler = new MessageHandler<VlcEvents>(self as any);
   };
   await Promise.race([vlc.start(), handler.awaitEvent('exit')]);
   vlc.stop();
+  stopLogging();
 })();
 
 function createCurrentTrack({ title, artist, file }: VlcServerStateData): {title: string, artists?: string[]} {
