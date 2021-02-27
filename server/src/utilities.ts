@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
-
 export function splitTitle(title: string): { title: string, artists?: string[] } {
     if (title.includes('-') && !title.match(/\([^()]+-[^()]+\)/)) {
         const [first, ...second] = title.split('-');
@@ -7,7 +5,7 @@ export function splitTitle(title: string): { title: string, artists?: string[] }
     } else if (title.includes('by')) {
         // used by SoundCloud
         const [first, ...second] = title.split('by');
-        return {artists: [second.join(' ')], title: first};
+        return {artists: [second.join(' ').trim()], title: first.trim()};
     } else {
         return {title: title};
     }
