@@ -1,5 +1,5 @@
 import { VlcServer, VlcServerStateData } from '../vlc/VlcServer.ts';
-import { MessageHandler } from './messaging.ts';
+import { MessageHandler } from './MessageHandler.ts';
 import { VlcEvents } from './events/Vlc.ts';
 import { randomHexString, splitTitle } from '../utilities.ts';
 

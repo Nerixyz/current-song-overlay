@@ -1,4 +1,4 @@
-import { MessageHandler } from './messaging.ts';
+import { MessageHandler } from './MessageHandler.ts';
 import { BrowserEvents } from './events/Browser.ts';
 import { WsServer } from '../WsServer.ts';
 import { BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap } from '../types.ts';

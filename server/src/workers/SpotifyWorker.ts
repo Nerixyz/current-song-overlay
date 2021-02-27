@@ -1,4 +1,4 @@
-import { MessageHandler } from './messaging.ts';
+import { MessageHandler } from './MessageHandler.ts';
 import { SpotifyEvents } from './events/Spotify.ts';
 import { SpotifyClient } from '../spotify/SpotifyClient.ts';
 import { sleep } from '../utilities.ts';
