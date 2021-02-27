@@ -58,7 +58,7 @@ export class OverlayServer extends WsServer<
     const nextAudible = first(this.channelStatuses.entries());
     if(!nextAudible) {
       log.debug(`(${channelId}) Tried falling back; no audible source`);
-      return;
+      return this.sendPaused();
     }
     const [audibleId, data] = nextAudible;
     this.lastStatusSender = audibleId;
