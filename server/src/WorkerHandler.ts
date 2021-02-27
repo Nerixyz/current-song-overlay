@@ -1,6 +1,6 @@
 import { SongSourceEvents } from './workers/events/SongSource.ts';
 import { LifecycleEvents } from './workers/events/Lifecycle.ts';
-import { HandlerTarget, MessageHandler } from './workers/MessageHandler.ts';
+import { MessageHandler } from './workers/MessageHandler.ts';
 
 const urlBase = import.meta.url.replace(/WorkerHandler.ts$/, '');
 
