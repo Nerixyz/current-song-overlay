@@ -7,7 +7,6 @@ const handler = new MessageHandler<VlcEvents>(self as any);
 
 (async () => {
   const options = await handler.awaitEvent('init');
-  console.log(options);
   const vlc = new VlcServer(options);
   vlc.onMessage = msg => {
     if (msg.state !== 'playing') {
