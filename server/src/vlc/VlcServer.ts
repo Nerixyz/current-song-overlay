@@ -17,9 +17,9 @@ export class VlcServer {
     async start() {
         this.listener = self.Deno.listen({ port: this.options.port ?? 235 });
         for await(const conn of this.listener) {
-            log.debug(`:235 - new connection: ${(conn.remoteAddr as Deno.NetAddr).port}`);
+            log.debug(`New connection: ${(conn.remoteAddr as Deno.NetAddr).port}`);
             this.handleConn(conn as Connection).catch(e => {
-                log.error(`:235 - Error handling socket: ${e.stack}`);
+                log.error(`Error handling socket: ${e.stack}`);
             }).finally(() => this.removeConn(conn));
         }
     }
@@ -41,14 +41,14 @@ export class VlcServer {
             try {
                 json = JSON.parse(text);
             } catch {
-                log.warning(`:235 - Invalid JSON: ${text}`);
+                log.warning(`Invalid JSON: ${text}`);
                 continue;
             }
 
             if(json.type === 'state' && !Array.isArray(json.data))
                 this.onMessage?.(json.data);
         }
-        log.debug(`:235 - connection ended: ${(conn.remoteAddr as Deno.NetAddr).port}`);
+        log.debug(`Connection ended: ${(conn.remoteAddr as Deno.NetAddr).port}`);
         conn[closeSymbol] = true;
         this.removeConn(conn);
     }
