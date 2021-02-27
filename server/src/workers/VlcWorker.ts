@@ -1,5 +1,5 @@
 import { VlcServer, VlcServerStateData } from '../vlc/VlcServer.ts';
-import { MessageHandler } from './MessageHandler.ts';
+import { MessageHandler } from "./MessageHandler.ts";
 import { VlcEvents } from './events/Vlc.ts';
 import { randomHexString, splitTitle } from '../utilities.ts';
 
@@ -15,7 +15,7 @@ const handler = new MessageHandler<VlcEvents>(self as any);
     }
 
     handler.emit('playing', {
-      song: {
+      track: {
         ...createCurrentTrack(msg),
         cover: msg.artwork_url && `/token.${serveFile(msg.artwork_url)}`,
       },

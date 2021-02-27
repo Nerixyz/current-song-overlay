@@ -3,13 +3,8 @@ import { SpotifyCache } from './SpotifyCache.ts';
 import { SpotifyWsCluster, SpotifyWsMessage } from './ws.types.ts';
 import { getId } from './utilities.ts';
 import { SpotifyTrack } from './http.types.ts';
-import {
-  NormalizedTrack,
-  OverlayClientEvent,
-  OverlayClientEventMap,
-  OverlayClientStateChangedEvent
-} from '../types.ts';
 import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
+import { PlayingEvent, Track } from '../types.ts';
 
 export interface SpotifyOptions {
   cookies?: string;
@@ -29,7 +24,7 @@ export class SpotifyClient {
 
   constructor(
     private cookies: string,
-    private stateChanged: (message: OverlayClientStateChangedEvent) => void
+    private stateChanged: (message: PlayingEvent | 'paused') => void
   ) {
     this.http = new SpotifyHttpApi(this.cookies);
     this.cache = new SpotifyCache(this.http);
@@ -79,8 +74,8 @@ export class SpotifyClient {
       const state = await this.http?.putConnectState();
       if (!state?.player_state) return;
       const data = await this.handleCluster(state);
-      if (typeof data !== 'object') return;
-      this.stateChanged(data);
+      if (!['object', 'string'].includes(typeof data)) return;
+      this.stateChanged(data as PlayingEvent | 'paused');
     });
   }
 
@@ -108,13 +103,13 @@ export class SpotifyClient {
     }
   }
 
-  public async handleCluster(cluster: SpotifyWsCluster): Promise<IteratorConsumerCommand | OverlayClientStateChangedEvent> {
+  public async handleCluster(cluster: SpotifyWsCluster): Promise<IteratorConsumerCommand | PlayingEvent | 'paused'> {
     if (!cluster?.player_state?.track && cluster?.player_state?.is_playing) {
       log.error(`spotify@ws: Invalid state - no track but playing doctorWtf - reconnecting`);
       return IteratorConsumerCommand.Exit;
     }
 
-    if (!cluster.player_state.track) return { state: 'paused' };
+    if (!cluster.player_state.track || cluster.player_state.is_paused) return 'paused';
 
 
     const current = await this.cache.getTrack(getId(cluster.player_state.track?.uri, 'track'));
@@ -123,12 +118,11 @@ export class SpotifyClient {
       return IteratorConsumerCommand.Continue;
     }
     return {
-      current: current ? normalizeTrack(current) : { name: cluster.player_state.track.metadata.title ?? '<doctorWtf>' },
-      state: cluster.player_state.is_paused ? 'paused' : cluster.player_state.is_playing ? 'playing' : 'unknown',
-      position: {
-        currentPositionSec: Number(cluster.player_state.position_as_of_timestamp) / 1000,
-        playbackSpeed: cluster.player_state.playback_speed,
-        maxPositionSec: Number(cluster.player_state.duration) / 1000,
+      track: current ? normalizeTrack(current) : { title: cluster.player_state.track.metadata.title ?? '<doctorWtf>' },
+      playPosition: {
+        position: Number(cluster.player_state.position_as_of_timestamp) / 1000,
+        rate: cluster.player_state.playback_speed,
+        duration: Number(cluster.player_state.duration) / 1000,
         startTs: Number(cluster.player_state.timestamp ?? cluster.timestamp),
       }
     };
@@ -166,12 +160,11 @@ enum IteratorConsumerCommand {
   Exit,
 }
 
-function normalizeTrack(track: SpotifyTrack): NormalizedTrack {
+function normalizeTrack(track: SpotifyTrack): Track {
   return {
-    name: track.name,
+    title: track.name,
     artists: track.artists.map(a => a.name),
-    albumName: track.album.name,
-    albumImageUrl: track.album.images
+    cover: track.album.images
       .reduce((acc, val) => val.height > acc.height ? val : acc, track.album.images[0])
       .url,
   };

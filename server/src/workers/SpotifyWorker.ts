@@ -13,23 +13,11 @@ const handler = new MessageHandler<SpotifyEvents>(self as any);
     while(true) {
       try {
         const client = new SpotifyClient(cookies, message => {
-          if(message.state !== 'playing') {
+          if (message === 'paused') {
             handler.emit('paused', 'paused');
             return;
           }
-          handler.emit('playing', {
-            playPosition: message.position && {
-              duration: message.position.maxPositionSec,
-              startTs: message.position.startTs,
-              position: message.position.currentPositionSec,
-              rate: message.position.playbackSpeed
-            },
-            song: {
-              artists: message.current!.artists,
-              cover: message.current!.albumImageUrl,
-              title: message.current!.name
-            }
-          })
+          handler.emit('playing', message);
         });
         await client.start();
         if(await Promise.race([exitPromise, client.closePromise]) === 'exit') {

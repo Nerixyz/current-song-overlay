@@ -12,13 +12,29 @@ export type WsMessage<T extends keyof WsMessageMap> = {
 };
 
 export interface WsMessageMap {
-  StateChanged: StateChangedEvent;
+  StateChanged: PlayingEvent | 'paused';
+}
+
+export interface PlayingEvent {
+  track: Track;
+  playPosition?: PlayPosition;
+}
+
+export interface Track {
+  title: string;
+  artists?: string[];
+  cover?: string;
+}
+
+export interface PlayPosition {
+  position: number;
+  duration: number;
+  rate?: number;
+  startTs: number;
 }
 
 export interface StateChangedEvent {
   current?: NormalizedTrack;
-  previous?: NormalizedTrack;
-  next?: NormalizedTrack;
   state: 'playing' | 'paused' | 'unknown';
   position?: PositionChangedEvent;
 }

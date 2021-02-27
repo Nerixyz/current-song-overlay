@@ -1,8 +1,27 @@
 import { MessageHandler } from './MessageHandler.ts';
 import { BrowserEvents } from './events/Browser.ts';
 import { WsServer } from '../WsServer.ts';
-import { BrowserActiveEvent, UpdateBrowserEventArg, UpdateBrowserEventMap } from '../types.ts';
 import { splitTitle } from '../utilities.ts';
+
+type UpdateBrowserEventArg<T extends keyof UpdateBrowserEventMap> = { type: T; data: UpdateBrowserEventMap[T] };
+
+interface UpdateBrowserEventMap {
+  Active: BrowserActiveEvent ;
+  Inactive: {};
+}
+
+interface BrowserActiveEvent {
+  current: {title: string, artist?: string, artwork?: string};
+  state?: BrowserVideoPlayState;
+}
+
+interface BrowserVideoPlayState {
+  speed: number;
+  mode: 'playing' | 'paused';
+  sentTs: number;
+  duration: number;
+  currentPos: number;
+}
 
 const handler = new MessageHandler<BrowserEvents>(self as any);
 
@@ -20,7 +39,7 @@ const handler = new MessageHandler<BrowserEvents>(self as any);
           rate: data.state.speed,
           position: data.state.currentPos,
         } : undefined,
-        song: {
+        track: {
           ...(!data.current.artist ? splitTitle(data.current.title) : {
             artists: [data.current.artist],
             title: data.current.title,

@@ -1,10 +1,10 @@
 import { WsServer } from "./WsServer.ts";
 import {
   OverlayClientEvent,
-  OverlayClientEventMap,
-} from "./types.ts";
+  OverlayClientEventMap, PlayingEvent,
+} from './types.ts';
 import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
-import { PlayingEvent, SongSourceEvents } from './workers/events/SongSource.ts';
+import { SongSourceEvents } from './workers/events/SongSource.ts';
 import { WorkerHandler } from './WorkerHandler.ts';
 
 export class OverlayServer extends WsServer<
@@ -18,32 +18,17 @@ export class OverlayServer extends WsServer<
     super(port, true);
   }
 
-  sendPlaying({song, playPosition}: PlayingEvent) {
+  sendPlaying(event: PlayingEvent) {
     this.sendToAll({
       type: 'StateChanged',
-      data: {
-        current: {
-          name: song.title,
-          albumImageUrl: song.cover,
-          artists: song.artists,
-        },
-        position: playPosition && {
-          playbackSpeed: playPosition.rate ?? 1,
-          currentPositionSec: playPosition.position,
-          startTs: playPosition.startTs,
-          maxPositionSec: playPosition.duration
-        },
-        state: 'playing'
-      }
+      data: event
     });
   }
 
   sendPaused() {
     this.sendToAll({
       type: 'StateChanged',
-      data: {
-        state: 'paused'
-      }
+      data: 'paused'
     });
   }
 
@@ -90,7 +75,7 @@ function first<T>(iter: Iterator<T>): T | undefined {
   return iter.next().value;
 }
 
-function stringifyState({playPosition, song: {title, artists}}: PlayingEvent) {
+function stringifyState({playPosition, track: {title, artists}}: PlayingEvent) {
   return (
     `[Playing] Current(title: '${
           title
