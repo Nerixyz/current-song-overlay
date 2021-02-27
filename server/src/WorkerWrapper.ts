@@ -1,6 +1,8 @@
 import { SongSourceEvents } from './workers/events/SongSource.ts';
 import { LifecycleEvents } from './workers/events/Lifecycle.ts';
 import { MessageHandler } from './workers/MessageHandler.ts';
+import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import { sleep } from './utilities.ts';
 
 const urlBase = import.meta.url.replace(/WorkerHandler.ts$/, '');
 
@@ -23,9 +25,13 @@ export class WorkerWrapper<Events extends Record<string, any>> {
     if(!this.events)
       (this.events as any) = new MessageHandler<Events>(this.worker);
 
-    this.worker.addEventListener('error', ev => {
-      // TODO: logging
+    this.worker.addEventListener('error', async ev => {
+      ev.preventDefault();
+
+      log.error(`Worker ${this.name} errored: ${ev.message} -- restarting in 30s`);
       this.worker.terminate();
+
+      await sleep(30 * 1000);
       this.start();
     }, {once: true});
     this.events.updateTarget(this.worker);
