@@ -1,4 +1,5 @@
-import { SongSourceEvents } from './SongSource.ts';
-import { LifecycleEvents } from './Lifecycle.ts';
+import { SongSourceEvents } from "./SongSource.ts";
+import { LifecycleEvents } from "./Lifecycle.ts";
 
-export interface BrowserEvents extends SongSourceEvents, LifecycleEvents<{ port: number }> {}
+export interface BrowserEvents
+  extends SongSourceEvents, LifecycleEvents<{ port: number }> {}

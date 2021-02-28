@@ -1,22 +1,22 @@
-import setupLogging from '../logging.ts';
-const stopLogging = await setupLogging('vlc');
-import { VlcServer, VlcServerStateData } from '../vlc/VlcServer.ts';
+import setupLogging from "../logging.ts";
+const stopLogging = await setupLogging("vlc");
+import { VlcServer, VlcServerStateData } from "../vlc/VlcServer.ts";
 import { MessageHandler } from "./MessageHandler.ts";
-import { VlcEvents } from './events/Vlc.ts';
-import { randomHexString, splitTitle } from '../utilities.ts';
+import { VlcEvents } from "./events/Vlc.ts";
+import { randomHexString, splitTitle } from "../utilities.ts";
 
 const handler = new MessageHandler<VlcEvents>(self as any);
 
 (async () => {
-  const options = await handler.awaitEvent('init');
+  const options = await handler.awaitEvent("init");
   const vlc = new VlcServer(options);
-  vlc.onMessage = msg => {
-    if (msg.state !== 'playing') {
-      handler.emit('paused', 'paused');
+  vlc.onMessage = (msg) => {
+    if (msg.state !== "playing") {
+      handler.emit("paused", "paused");
       return;
     }
 
-    handler.emit('playing', {
+    handler.emit("playing", {
       track: {
         ...createCurrentTrack(msg),
         cover: msg.artwork_url && `/token.${serveFile(msg.artwork_url)}`,
@@ -25,16 +25,18 @@ const handler = new MessageHandler<VlcEvents>(self as any);
         rate: msg.rate,
         position: msg.position,
         startTs: Date.now(),
-        duration: msg.duration
-      }
+        duration: msg.duration,
+      },
     });
   };
-  await Promise.race([vlc.start(), handler.awaitEvent('exit')]);
+  await Promise.race([vlc.start(), handler.awaitEvent("exit")]);
   vlc.stop();
   stopLogging();
 })();
 
-function createCurrentTrack({ title, artist, file }: VlcServerStateData): {title: string, artists?: string[]} {
+function createCurrentTrack(
+  { title, artist, file }: VlcServerStateData,
+): { title: string; artists?: string[] } {
   if (!title) {
     return artist ? { artists: [artist], title: file } : { title: file };
   }
@@ -43,8 +45,7 @@ function createCurrentTrack({ title, artist, file }: VlcServerStateData): {title
 
 function serveFile(url: string): string {
   const id = randomHexString(20);
-  handler.emit('serveUrl', [url, id]);
+  handler.emit("serveUrl", [url, id]);
 
   return id;
 }
-

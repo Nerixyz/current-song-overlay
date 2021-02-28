@@ -1,4 +1,4 @@
 export interface LifecycleEvents<Init> {
-  init: Init,
-  exit: 'exit';
+  init: Init;
+  exit: "exit";
 }
