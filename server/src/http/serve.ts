@@ -9,7 +9,8 @@ import {
   normalize,
 } from "https://deno.land/std@0.88.0/path/mod.ts";
 import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
-import { randomHexString, RingBuffer } from "../utilities.ts";
+import { randomHexString} from "../utilities.ts";
+import { RingBuffer } from './ringBuffer.ts';
 
 export class StaticFileMapSingleton {
   protected knownPaths = new Map<string, string>();
