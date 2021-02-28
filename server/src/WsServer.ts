@@ -1,10 +1,10 @@
-import {serve, Server} from 'https://deno.land/std@0.75.0/http/server.ts';
+import {serve, Server} from 'https://deno.land/std@0.88.0/http/server.ts';
 import {
     acceptWebSocket,
     isWebSocketCloseEvent,
     WebSocket,
-} from 'https://deno.land/std@0.75.0/ws/mod.ts';
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+} from 'https://deno.land/std@0.88.0/ws/mod.ts';
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
 
 
 export class WsServer<MsgType = unknown> {

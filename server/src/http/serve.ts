@@ -1,7 +1,7 @@
-import { listenAndServe } from 'https://deno.land/std@0.75.0/http/server.ts';
-import type { Response, ServerRequest } from 'https://deno.land/std@0.75.0/http/server.ts';
-import { normalize, join as pathJoin, extname } from 'https://deno.land/std@0.75.0/path/mod.ts';
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import { listenAndServe } from 'https://deno.land/std@0.88.0/http/server.ts';
+import type { Response, ServerRequest } from 'https://deno.land/std@0.88.0/http/server.ts';
+import { normalize, join as pathJoin, extname } from 'https://deno.land/std@0.88.0/path/mod.ts';
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
 import { randomHexString, RingBuffer } from '../utilities.ts';
 
 export class StaticFileMapSingleton {

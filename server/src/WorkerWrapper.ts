@@ -1,7 +1,7 @@
 import { SongSourceEvents } from './workers/events/SongSource.ts';
 import { LifecycleEvents } from './workers/events/Lifecycle.ts';
 import { MessageHandler } from './workers/MessageHandler.ts';
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import * as log from 'https://deno.land/std@0.88.0/log/mod.ts';
 import { sleep } from './utilities.ts';
 
 const urlBase = import.meta.url.replace(/WorkerHandler.ts$/, '');

@@ -3,7 +3,7 @@ import setupLogging from './logging.ts';
 const stopLogging = await setupLogging('main');
 import { isModuleEnabled, getVarOrDefault, getModuleOptions } from './config/mod.ts';
 import { OverlayServer } from "./OverlayServer.ts";
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
 import { serve, StaticFileMapSingleton } from './http/serve.ts';
 import { BrowserEvents } from './workers/events/Browser.ts';
 import { WorkerWrapper } from './WorkerWrapper.ts';

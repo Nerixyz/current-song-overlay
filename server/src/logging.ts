@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
 
 export default async function setup(name: string) {
     const fileHandler = new log.handlers.RotatingFileHandler("INFO", {

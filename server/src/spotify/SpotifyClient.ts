@@ -3,7 +3,7 @@ import { SpotifyCache } from './SpotifyCache.ts';
 import { SpotifyWsCluster, SpotifyWsMessage } from './ws.types.ts';
 import { getId } from './utilities.ts';
 import { SpotifyTrack } from './http.types.ts';
-import * as log from 'https://deno.land/std@0.75.0/log/mod.ts';
+import * as log from 'https://deno.land/std@0.88.0/log/mod.ts';
 import { PlayingEvent, Track } from '../types.ts';
 
 export interface SpotifyOptions {

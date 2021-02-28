@@ -1,5 +1,5 @@
 import { config as envConfig } from 'https://deno.land/x/dotenv@v1.0.1/mod.ts';
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
 import { Config, ModuleOptions } from './config.types.ts';
 
 await initDotEnv();
