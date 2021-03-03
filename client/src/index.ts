@@ -5,8 +5,6 @@ import {
   MySmolDom,
   PlayingEvent,
   PlayPosition,
-  PositionChangedEvent,
-  StateChangedEvent,
   WsMessage,
   WsMessageMap
 } from './types';
