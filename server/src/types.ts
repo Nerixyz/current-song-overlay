@@ -22,5 +22,5 @@ export interface PlayPosition {
   position: number;
   duration: number;
   rate?: number;
-  startTs: number;
+  timestamp: number;
 }

@@ -24,7 +24,7 @@ const handler = new MessageHandler<VlcEvents>(self as any);
       playPosition: {
         rate: msg.rate,
         position: msg.position,
-        startTs: Date.now(),
+        timestamp: Date.now(),
         duration: msg.duration,
       },
     });
