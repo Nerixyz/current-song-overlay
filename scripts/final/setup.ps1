@@ -19,3 +19,7 @@ if ([System.IO.File]::Exists($filepath))
     $content = Get-Content $filepath -Raw;
     $content -replace "\n#?lua-intf=.*\n", "`nlua-intf=current-song`n" -replace "\n#?intf=.*\n", "`nintf=qt`n" -replace "\n#?extraintf=.*\n", "`nextraintf=luaintf`n" | Out-File $filepath > $null;
 }
+else
+{
+    Write-Output "Could not find $filepath";
+}
