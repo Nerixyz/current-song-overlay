@@ -4,8 +4,6 @@ import copy from 'rollup-plugin-copy'
 export default [
   'background',
   ...fromDirectory('content-scripts', [
-    'bugDjFix',
-    'plugDjFix',
     'trackVideoProgress',
     'soundcloud',
     'neverthink',
