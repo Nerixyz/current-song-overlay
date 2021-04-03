@@ -1,81 +1,69 @@
 // load the logger before everything
-import setupLogging from './logging.ts';
-const stopLogging = await setupLogging();
-import { isModuleEnabled, getVarOrDefault } from './config.ts';
-import { createReloader } from "./utilities.ts";
-import { OverlayServer } from "./OverlayServer.ts";
+import setupLogging from "./logging.ts";
+const stopLogging = await setupLogging("main");
 import {
-  createBrowserHandler,
-  createServer,
-  createSpotifyClientAndHandler,
-  createVlcServer,
-} from './create-handler.ts';
-import * as log from "https://deno.land/std@0.75.0/log/mod.ts";
+  getModuleOptions,
+  getVarOrDefault,
+  isModuleEnabled,
+} from "./config/mod.ts";
+import { OverlayServer } from "./OverlayServer.ts";
+import * as log from "https://deno.land/std@0.88.0/log/mod.ts";
+import { serve, StaticFileMapSingleton } from "./http/serve.ts";
+import { BrowserEvents } from "./workers/events/Browser.ts";
+import { WorkerWrapper } from "./WorkerWrapper.ts";
+import { SpotifyEvents } from "./workers/events/Spotify.ts";
+import { VlcEvents } from "./workers/events/Vlc.ts";
 
 const logger = log.getLogger();
 logger.info("\n\n\nStarting Current Song Overlay");
 
-const clientServer = new OverlayServer(getVarOrDefault('websocketPort', 231));
+const clientServer = new OverlayServer(getVarOrDefault("websocketPort", 231));
 
-const reloader = createReloader();
-const promises = [clientServer.start()];
+if (getVarOrDefault("overlayEnabled", true)) {
+  const port = getVarOrDefault("overlayPort", 230);
+  log.debug(`Serving files on :${port}`);
+  serve({
+    port,
+    path: Deno.env.get("NON_BUILD_ENV") ? "client/public" : "overlay",
+  }).catch((e) => log.error("Serve failed", e));
+}
 
 if (isModuleEnabled("browser")) {
   logger.info("Using BrowserHandler");
-  promises.push(
-    reloader.start(
-      createBrowserHandler(clientServer, clientServer.createChannel()),
-      undefined,
-      "BrowserHandler"
-    )
+  const browserConfig = getModuleOptions("browser");
+  clientServer.registerWorker(
+    new WorkerWrapper<BrowserEvents>("BrowserWorker", {
+      port: browserConfig.port ?? 232,
+    }, {}),
   );
 }
 
-if (isModuleEnabled("spotify")) {
-  logger.info("Using SpotifyHandler");
-  const spotify = createSpotifyClientAndHandler(clientServer, clientServer.createChannel());
-  if(spotify) {
-    promises.push(
-        reloader.start(
-            spotify,
-            (e) => logger.error(`Spotify: ${ e.message }`),
-            "SpotifyHandler"
-        )
+(() => {
+  if (isModuleEnabled("spotify")) {
+    logger.info("Using SpotifyHandler");
+    const spotifyOptions = getModuleOptions("spotify");
+    if (!spotifyOptions.cookies || spotifyOptions.cookies.endsWith("=")) return;
+
+    clientServer.registerWorker(
+      new WorkerWrapper<SpotifyEvents>("SpotifyWorker", {
+        cookies: spotifyOptions.cookies,
+      }, {}),
     );
   }
-}
+})();
 
 if (isModuleEnabled("vlc")) {
   logger.info("Using VlcHandler");
-  // promises.push(
-  //   reloader.start(
-  //     createVlcClient(clientServer, clientServer.createChannel()),
-  //     undefined,
-  //     "VlcHandler"
-  //   )
-  // );
+  const vlcOptions = getModuleOptions("vlc");
 
-  promises.push(
-      reloader.start(
-          createVlcServer(clientServer, clientServer.createChannel()),
-          undefined,
-          "VlcHandler"
-      )
+  clientServer.registerWorker(
+    new WorkerWrapper<VlcEvents>("VlcWorker", vlcOptions, {
+      serveUrl([url, id]) {
+        StaticFileMapSingleton.instance().add(url, id);
+      },
+    }),
   );
 }
 
-if (getVarOrDefault('overlayEnabled', true)) {
-  logger.info("Serving static files");
-  promises.push(reloader.start(createServer(), undefined, "StaticServer"));
-}
-
-await Promise.race(promises)
-  .catch((e) =>
-    logger.critical(`Client errored: ${e.message ?? e} ${e.stack ?? ""}`)
-  )
-  .finally(async () => {
-    logger.info("Client stopped");
-    await reloader.stop();
-    stopLogging();
-    Deno.exit();
-  });
+await clientServer.start();
+stopLogging();

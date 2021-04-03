@@ -1,7 +1,13 @@
 import { connectWithReconnect, getCSSVariable, polyfillGetAnimations } from './utilities';
 import { ProgressBarAnimation } from './progress-bar-animation';
 import { SmolDom } from './SmolDom';
-import { MySmolDom, PositionChangedEvent, StateChangedEvent, WsMessage, WsMessageMap } from './types';
+import {
+  MySmolDom,
+  PlayingEvent,
+  PlayPosition,
+  WsMessage,
+  WsMessageMap
+} from './types';
 import { useMarquee } from './SmolMarquee';
 
 polyfillGetAnimations();
@@ -34,10 +40,15 @@ function makeOnWsMessage() {
 
     switch (event.type) {
       case 'StateChanged': {
-        const data = event.data as StateChangedEvent;
-        handleStateChanged(data, dom);
-        if (data.position) {
-          handlePositionChanged(data.position, dom, progressAnimation);
+        const data = event.data;
+        if(data === 'paused') {
+          onPause(dom);
+        } else {
+          onPlaying(data, dom);
+        }
+
+        if (data !== 'paused' && data.playPosition) {
+          handlePositionChanged(data.playPosition, dom, progressAnimation);
         } else {
           dom.addClass('display-none', 'progressBar');
           progressAnimation.stop();
@@ -51,34 +62,34 @@ function makeOnWsMessage() {
   };
 }
 
-function handleStateChanged(event: StateChangedEvent, dom: SmolDom<MySmolDom>) {
-  if (event.state === 'playing' && event.current) {
-    dom
-      .text({
-        title: event.current.name ?? null,
-        artist: event.current.artists?.join(', ') ?? null,
-      })
-      .prop<HTMLImageElement>('src', {
-        albumArt: event.current.albumImageUrl ?? '',
-      })
-      .conditionalClass('display-none', !event.current.albumImageUrl, 'albumArt')
-      .addClass('shown', 'wrapper')
-      .removeClass('hidden', 'wrapper').getElement('wrapper').style.height = event.current.albumImageUrl ? '4.4em' : '';
-  } else {
-    dom.removeClass('shown', 'wrapper').addClass('hidden', 'wrapper');
-  }
+function onPause(dom: SmolDom<MySmolDom>) {
+  dom.removeClass('shown', 'wrapper').addClass('hidden', 'wrapper');
 }
 
-function handlePositionChanged(event: PositionChangedEvent, dom: SmolDom<MySmolDom>, progressAnimation: ProgressBarAnimation) {
-  if (event.playbackSpeed === 0) {
+function onPlaying(event: PlayingEvent, dom: SmolDom<MySmolDom>) {
+  dom
+    .text({
+      title: event.track.title ?? null,
+      artist: event.track.artists?.join(', ') ?? null,
+    })
+    .prop<HTMLImageElement>('src', {
+      albumArt: event.track.cover ?? '',
+    })
+    .conditionalClass('display-none', !event.track.cover, 'albumArt')
+    .addClass('shown', 'wrapper')
+    .removeClass('hidden', 'wrapper').getElement('wrapper').style.height = event.track.cover ? '4.4em' : '';
+}
+
+function handlePositionChanged(event: PlayPosition, dom: SmolDom<MySmolDom>, progressAnimation: ProgressBarAnimation) {
+  if (event.rate === 0) {
     progressAnimation.stop();
     return;
   }
   dom.removeClass('display-none', 'progressBar');
   progressAnimation.start({
-    maxSec: event.maxPositionSec,
-    startSec: event.currentPositionSec,
-    speed: event.playbackSpeed,
+    maxSec: event.duration,
+    startSec: event.position,
+    speed: event.rate ?? 1,
     startTs: event.startTs,
   });
 }
