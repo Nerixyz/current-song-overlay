@@ -1,6 +1,6 @@
 import Tab = browser.tabs.Tab;
-import { PlayStateContainer, UpdateEventFn, VideoMetadata, VideoPlayState } from './types';
-import { cleanupTabName, cloneClass } from './utilities';
+import { UpdateEventFn, VideoMetadata, VideoPlayMode, VideoPlayPosition } from './types';
+import { cloneClass } from './utilities';
 import { TabModel } from './TabModel';
 import { getAllWindows } from './extension-api';
 
@@ -13,30 +13,32 @@ enum WindowState {
 }
 
 export class TabChangeHandler {
-  currentlySent?: TabModel;
-  currentAudible: Record<number, TabModel> = {};
-  windowStates: Record<number, WindowState> = {};
+  currentTab?: TabModel;
+  currentAudible = new Map<number, TabModel>();
+  windowStates = new Map<number, WindowState>();
 
   constructor(
     protected options: { onlyInactive: boolean } = { onlyInactive: true },
     protected activeWindowId: number,
     initialTabs: Tab[]
   ) {
-    for (const tab of initialTabs) this.create(tab);
+    for (const tab of initialTabs) this.createTabModel(tab);
   }
 
   public onUpdate?: UpdateEventFn;
 
-  protected getOrCreate(id: number, tab: Tab): TabModel {
-    const found = this.currentAudible[id];
+  protected getOrCreateTabModel(id: number, tab: Tab): TabModel {
+    const found = this.currentAudible.get(id);
     if (found) return found;
-    else {
-      return (this.currentAudible[id] = new TabModel(tab));
-    }
+
+    const model = new TabModel(tab);
+    this.currentAudible.set(id, model);
+
+    return model;
   }
 
   protected get(id: number): TabModel | undefined {
-    return this.currentAudible[id];
+    return this.currentAudible.get(id);
   }
 
   protected forceGet(id: number): TabModel {
@@ -47,101 +49,99 @@ export class TabChangeHandler {
     return got;
   }
 
-  protected create(tab: Tab) {
-    this.currentAudible[tab.id ?? -1] = new TabModel(tab);
+  protected createTabModel(tab: Tab): TabModel {
+    const model = new TabModel(tab);
+    this.currentAudible.set(tab.id ?? -1, model);
+
+    return model;
   }
 
-  handleCreated(tab: Tab) {
-    this.create(tab);
+  onTabCreated(tab: Tab): void {
+    this.createTabModel(tab);
   }
 
-  handleUpdated(updateInfo: Partial<Tab>, tab: Tab) {
+  onTabUpdated(updateInfo: Partial<Tab>, tab: Tab): void {
     this.forceGet(tab.id ?? -1).update(tab);
 
-    if (typeof updateInfo.audible === 'boolean' && updateInfo.audible && this.currentlySent?.id === tab.id) return;
+    if (typeof updateInfo.audible === 'boolean' && updateInfo.audible && this.currentTab?.id === tab.id) return;
     this.findAndUpdateNext();
   }
 
-  handleFocus(tabId: number, previous: number | undefined, tab: Tab) {
-    Object.values(this.currentAudible).forEach(x =>
-      // only update the current window
-      x.windowId === tab.windowId ? x.forceActive(x.id === tabId) : undefined
-    );
-    this.get(tabId)?.update(tab);
+  onTabFocused(previous: number | undefined, focusedTab: Tab): void {
+    if (previous) this.get(previous)?.setActive(false);
+
+    this.get(focusedTab.id ?? -1)?.update(focusedTab);
     this.findAndUpdateNext();
   }
 
-  handleRemove(tabId: number) {
-    delete this.currentAudible[tabId];
+  onTabRemoved(tabId: number): void {
+    this.currentAudible.delete(tabId);
     this.findAndUpdateNext();
   }
 
-  async handleWindowFocus(windowId: number) {
+  async onWindowFocused(windowId: number): Promise<void> {
     await this.updateWindowStates();
     this.activeWindowId = windowId;
     this.findAndUpdateNext();
   }
 
-  handleWindowRemoved(windowId: number) {
-    delete this.windowStates[windowId];
+  onWindowRemoved(windowId: number): void {
+    this.windowStates.delete(windowId);
   }
 
-  handlePlayState(tabId: number, state: PlayStateContainer, tab: Tab) {
-    const updatedTab = this.getOrCreate(tabId, tab);
-    updatedTab.updatePlayState(state.state?.mode === 'playing' ? state.state : undefined);
-    if (this.currentlySent?.id === tabId) {
-      if (state.state?.mode === 'playing') {
-        this.updateCurrent(updatedTab);
-      } else {
-        this.updateCurrent();
-      }
-    } else if (
-      !this.currentlySent &&
-      state.state?.mode === 'playing' &&
-      (this.isValidTab(updatedTab))
-    ) {
-      this.updateCurrent(updatedTab);
-    }
-  }
-
-  handleOverriddenTitle(tabId: number, title: string | null) {
-    this.get(tabId)?.overrideTitle(title);
+  updatePlayPosition(tab: Tab, position: VideoPlayPosition): void {
+    this.getOrCreateTabModel(tab.id ?? -1, tab).updatePlayState(position);
     this.findAndUpdateNext();
   }
 
-  handleMetadataUpdated(tabId: number, metadata?: VideoMetadata) {
-    this.get(tabId)?.updateMetadata(metadata);
+  updatePlayMode(tab: Tab, mode: VideoPlayMode): void {
+    const updatedTab = this.getOrCreateTabModel(tab.id ?? -1, tab).updateMode(mode);
+    const tabId = tab.id;
+    if (this.currentTab?.id === tabId) {
+      this.updateCurrent(mode === 'playing' ? updatedTab : undefined);
+    } else if (!this.currentTab && mode === 'playing' && this.isValidTab(updatedTab)) {
+      this.updateCurrent(updatedTab);
+    }
+    // ignored:
+    //  - `tab` isn't `currentlySent` => don't send
+    //  - `tab` and `currentlySent` are paused
+  }
+
+  updateMetadata(tab: Tab, metadata?: VideoMetadata): void {
+    this.getOrCreateTabModel(tab.id ?? -1, tab).updateMetadata(metadata);
     this.findAndUpdateNext();
   }
 
   protected async updateWindowStates() {
     for (const window of await getAllWindows()) {
-      this.windowStates[window.id ?? -1] = WindowState[window.state ?? 'normal'];
+      this.windowStates.set(window.id ?? -1, WindowState[window.state ?? 'normal']);
     }
   }
 
   protected isValidTab(tab: TabModel) {
-    return !this.options.onlyInactive || (
-      (!tab.active || tab.windowId !== this.activeWindowId) &&
-      this.windowStates[tab.windowId] !== WindowState.fullscreen);
+    return (
+      !this.options.onlyInactive ||
+      ((!tab.active || tab.windowId !== this.activeWindowId) &&
+        this.windowStates.get(tab.windowId) !== WindowState.fullscreen)
+    );
   }
 
   protected findAndUpdateNext() {
-    let audible = Object.values(this.currentAudible).filter(x => x.audible && this.isValidTab(x));
+    let audible = [...this.currentAudible.values()].filter(x => x.isPlaying && this.isValidTab(x));
     if (audible.length > 1) audible = audible.filter(x => !x.active);
     this.updateCurrent(audible[0]);
   }
 
   protected updateCurrent(tab?: TabModel) {
     if (!tab) {
-      if (this.currentlySent) {
-        this.currentlySent = undefined;
+      if (this.currentTab) {
+        this.currentTab = undefined;
         return this.emitInactive();
       }
       return;
     }
-    if (!tab.isEqual(this.currentlySent)) {
-      this.currentlySent = cloneClass(tab);
+    if (!tab.isEqual(this.currentTab)) {
+      this.currentTab = cloneClass(tab);
       this.sendTab(tab);
     }
     // do nothing, both are equal
@@ -156,7 +156,7 @@ export class TabChangeHandler {
   }
 
   protected emitInactive() {
-    this.currentlySent = undefined;
+    this.currentTab = undefined;
     this.onUpdate?.({ type: 'Inactive', data: {} });
   }
 }

@@ -5,8 +5,8 @@ export function cleanupTabName(name?: string) {
 export function connectWithReconnect(url: string): { value?: WebSocket } {
   const obj: { value?: WebSocket } = { value: undefined };
   let factor = 0;
-  const updateFactor = () => factor = Math.min(factor + 5, 120);
-  const resetFactor = () => factor = 0;
+  const updateFactor = () => (factor = Math.min(factor + 5, 120));
+  const resetFactor = () => (factor = 0);
   const set = () => {
     try {
       console.log('connecting to', url);
@@ -50,15 +50,19 @@ export function cloneClass<T>(base: T): T {
 }
 
 export function isDeepEqual<T>(a: T, b: T): boolean {
-  if(typeof a !== 'object') return a === b;
+  if (typeof a !== 'object') return a === b;
 
   const aEntries = Object.entries(a);
 
-  for(const [key, value] of aEntries) {
-    if(!isDeepEqual(value,
-      // @ts-expect-error -- these are the "same"
-      b[key])
-    ) return false;
+  for (const [key, value] of aEntries) {
+    if (
+      !isDeepEqual(
+        value,
+        // @ts-expect-error -- these are the "same"
+        b[key]
+      )
+    )
+      return false;
   }
   return true;
 }
