@@ -14,15 +14,6 @@
       "js": ["content-scripts/trackVideoProgress.js"]
     },
     {
-      "matches": ["*://plug.dj/*"],
-      "js": ["content-scripts/plugDjFix.js"]
-    },
-    {
-      "matches": ["*://yt.bug.dj/yt5.html"],
-      "js": ["content-scripts/bugDjFix.js"],
-      "all_frames": true
-    },
-    {
       "matches": ["*://*.soundcloud.com/*"],
       "js": ["content-scripts/soundcloud.js"]
     },

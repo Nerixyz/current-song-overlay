@@ -169,7 +169,7 @@ export class SpotifyClient {
         position: Number(cluster.player_state.position_as_of_timestamp) / 1000,
         rate: cluster.player_state.playback_speed,
         duration: Number(cluster.player_state.duration) / 1000,
-        startTs: Number(cluster.player_state.timestamp ?? cluster.timestamp),
+        timestamp: Number(cluster.player_state.timestamp ?? cluster.timestamp),
       },
     };
   }

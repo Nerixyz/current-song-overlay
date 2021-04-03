@@ -3,40 +3,37 @@ export type UpdateEventFn = (e: UpdateEventArg<keyof UpdateEventMap>) => void;
 export type UpdateEventArg<T extends keyof UpdateEventMap> = { type: T; data: UpdateEventMap[T] };
 
 export interface UpdateEventMap {
-  Active: UpdateActiveEventData ;
+  Active: UpdateActiveEventData;
   Inactive: {};
 }
 
 export interface UpdateActiveEventData {
-  current: {title: string, artist?: string, artwork?: string};
-  state?: VideoPlayState;
+  metadata: VideoMetadata;
+  position?: VideoPlayPosition;
 }
 
-export interface VideoPlayState {
-  speed: number;
-  mode: 'playing' | 'paused';
-  sentTs: number;
+export interface VideoPlayPosition {
+  rate: number;
+  timestamp: number;
   duration: number;
-  currentPos: number;
+  position: number;
 }
+
+export type VideoPlayMode = 'playing' | 'paused' | 'none';
 
 export interface VideoMetadata {
-  mode: 'playing' | 'paused'|'none';
-  positionState?: Omit<VideoPlayState, 'mode'>;
-  metadata?: {title: string, artist: string, artwork?: string};
+  title: string;
+  artist?: string;
+  artwork?: string;
 }
 
-export interface PlayStateContainer {
-  state?: VideoPlayState;
+export interface PlayPositionContainer {
+  state?: VideoPlayPosition;
   tabId: number;
 }
 
-export interface InternalMessageMap {
-  PlayState: VideoPlayState;
-  Title: string | null;
-  Metadata: string;
-}
-export interface InternalMessage<T extends keyof InternalMessageMap & string = keyof InternalMessageMap & string>  {
-  type: T;
-  data: InternalMessageMap[T];
-}
+export type InternalMessageMap = {
+  PlayPosition: VideoPlayPosition;
+  Metadata: VideoMetadata;
+  PlayMode: VideoPlayMode;
+};

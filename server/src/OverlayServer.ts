@@ -86,7 +86,7 @@ function stringifyState(
       ""}')` +
     (playPosition
       ? ` Position(pos: ${playPosition.position} speed: ${playPosition.rate ??
-        1} duration: ${playPosition.duration} ts: ${playPosition.startTs})`
+        1} duration: ${playPosition.duration} ts: ${playPosition.timestamp})`
       : "")
   );
 }

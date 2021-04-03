@@ -1,11 +1,10 @@
 import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy'
+import nodeResolve from '@rollup/plugin-node-resolve';
 
 export default [
   'background',
   ...fromDirectory('content-scripts', [
-    'bugDjFix',
-    'plugDjFix',
     'trackVideoProgress',
     'soundcloud',
     'neverthink',
@@ -18,7 +17,7 @@ export default [
     file: `dist/build/${file}.js`,
     format: 'iife',
   },
-  plugins: [typescript({ tsconfig: 'tsconfig.json' }), copy({
+  plugins: [typescript({ tsconfig: 'tsconfig.json' }), nodeResolve({extensions: ['js', 'ts']}), copy({
     targets: [{src: 'manifest.json', dest: 'dist/build'}]
   })],
 }));

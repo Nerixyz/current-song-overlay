@@ -8,6 +8,7 @@ import { randomHexString, splitTitle } from "../utilities.ts";
 const handler = new MessageHandler<VlcEvents>(self as any);
 
 (async () => {
+  handler.emit("started", "started");
   const options = await handler.awaitEvent("init");
   const vlc = new VlcServer(options);
   vlc.onMessage = (msg) => {
@@ -24,7 +25,7 @@ const handler = new MessageHandler<VlcEvents>(self as any);
       playPosition: {
         rate: msg.rate,
         position: msg.position,
-        startTs: Date.now(),
+        timestamp: Date.now(),
         duration: msg.duration,
       },
     });

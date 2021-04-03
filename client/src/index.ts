@@ -90,7 +90,7 @@ function handlePositionChanged(event: PlayPosition, dom: SmolDom<MySmolDom>, pro
     maxSec: event.duration,
     startSec: event.position,
     speed: event.rate ?? 1,
-    startTs: event.startTs,
+    startTs: event.timestamp,
   });
 }
 

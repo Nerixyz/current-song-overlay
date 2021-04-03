@@ -43,6 +43,8 @@ export class WorkerWrapper<Events extends Record<string, any>> {
     if (!this.events) {
       (this.events as any) = new MessageHandler<Events>(this.worker);
     }
+    this.events.once('started',
+      () => this.events.emit("init", this.init));
 
     this.worker.addEventListener("error", async (ev) => {
       ev.preventDefault();
@@ -56,6 +58,5 @@ export class WorkerWrapper<Events extends Record<string, any>> {
       this.start();
     }, { once: true });
     this.events.updateTarget(this.worker);
-    this.events.emit("init", this.init);
   }
 }

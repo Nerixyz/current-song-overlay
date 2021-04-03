@@ -1,5 +1,7 @@
-import { VideoPlayState } from '../types';
-import { sendRuntimeMessage } from '../extension-api';
+import { InternalMessageMap, VideoPlayPosition } from '../types';
+import { ContentEventHandler } from 'beaverjs';
+
+const events = new ContentEventHandler<InternalMessageMap>();
 
 window.addEventListener('message', async msg => {
   if (!msg.origin.endsWith('youtube.com')) return;
@@ -7,17 +9,15 @@ window.addEventListener('message', async msg => {
   const { event, info }: { event: string; info: YTInfoDelivery } = JSON.parse(msg.data);
   if (event !== 'infoDelivery' || !info.videoData || !info.videoData.title || !info.videoData.author) return;
 
-  const state: VideoPlayState = {
-    mode: info.playerState === 1 ? 'playing' : 'paused',
-    currentPos: info.currentTime,
-    sentTs: info.currentTimeLastUpdated_ * 1000,
-    speed: info.playbackRate,
-    duration: info.duration
+  const playPosition: VideoPlayPosition = {
+    position: info.currentTime,
+    timestamp: info.currentTimeLastUpdated_ * 1000,
+    rate: info.playbackRate,
+    duration: info.duration,
   };
-  await Promise.all([
-    sendRuntimeMessage('PlayState', state),
-    sendRuntimeMessage('Title', `${info.videoData.author} - ${info.videoData.title}`)
-  ]);
+  events.emitBackground('PlayPosition', playPosition);
+  events.emitBackground('PlayMode', info.playerState === 1 ? 'playing' : 'paused');
+  events.emitBackground('Metadata', { title: info.videoData.title, artist: info.videoData.author });
 });
 
 interface YTInfoDelivery {

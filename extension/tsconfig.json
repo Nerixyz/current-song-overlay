@@ -9,7 +9,8 @@
     "noImplicitAny": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
-    "strictFunctionTypes": true
+    "strictFunctionTypes": true,
+    "moduleResolution": "Node"
   },
   "exclude": [
     "node_modules"

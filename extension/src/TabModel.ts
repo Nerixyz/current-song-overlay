@@ -1,44 +1,86 @@
 import Tab = browser.tabs.Tab;
-import { UpdateActiveEventData,  VideoMetadata, VideoPlayState } from './types';
+import { UpdateActiveEventData, VideoMetadata, VideoPlayMode, VideoPlayPosition } from './types';
 import { cleanupTabName, isDeepEqual } from './utilities';
 
 export class TabModel {
-  get title() {
-    return cleanupTabName(this._overriddenTitle) ?? this.metadata?.metadata?.title ?? cleanupTabName(this._title) ?? '';
+  get title(): string {
+    return this.metadata?.title ?? cleanupTabName(this._tabTitle) ?? '';
   }
 
-  protected _title: string = '';
-  protected _overriddenTitle?: string;
+  get artist(): string | undefined {
+    return !this.metadata?.artist || this.metadata.title.includes('-') // either no artist or the artist is in the title
+      ? undefined
+      : this.metadata.artist;
+  }
+
+  get isPlaying(): boolean {
+    return this.playMode === 'playing' || (!this.playMode && this.audible);
+  }
+
+  /**
+   * This is only the tabs title
+   * @type {string}
+   * @protected
+   */
+  protected _tabTitle: string = '';
+
   id: number = -1;
   windowId: number = -1;
-  playState?: VideoPlayState;
-  metadata?: VideoMetadata;
   active: boolean = false;
   audible: boolean = false;
+
+  playPosition?: VideoPlayPosition;
+  metadata?: VideoMetadata;
+  playMode?: VideoPlayMode = undefined;
 
   constructor(tab: Tab) {
     this.update(tab);
   }
 
   update(tab: Tab) {
-    this._title = tab.title ?? '';
+    this._tabTitle = tab.title ?? '';
     this.id = tab.id ?? -1;
     this.windowId = tab.windowId ?? -1;
     this.active = tab.active;
     this.audible = !!tab.audible;
   }
 
-  updatePlayState(state?: VideoPlayState) {
-    this.playState = state;
+  updatePlayState(state?: VideoPlayPosition): this {
+    this.playPosition = state;
+
+    return this;
   }
 
-  overrideTitle(title: string | null) {
-    if (title === null) this._overriddenTitle = undefined;
-    else this._overriddenTitle = title;
-  }
-
-  updateMetadata(newMeta?: VideoMetadata) {
+  updateMetadata(newMeta?: VideoMetadata): this {
     this.metadata = newMeta;
+
+    return this;
+  }
+
+  /**
+   *
+   * @param {VideoPlayMode} mode This can't be `undefined`.
+   *    `undefined` indicates there's no content-script.
+   *    Once this is called there's at least once script matching.
+   * @returns {this}
+   */
+  updateMode(mode: VideoPlayMode): this {
+    this.playMode = mode;
+
+    if (this.playMode !== 'playing') {
+      // clear the position, the script has to re-send it
+      this.playPosition = undefined;
+    }
+
+    return this;
+  }
+
+  setAudible(audible: boolean) {
+    this.audible = audible;
+  }
+
+  setActive(active: boolean) {
+    this.active = active;
   }
 
   isEqual(other?: TabModel) {
@@ -47,28 +89,20 @@ export class TabModel {
       (!!other &&
         this.id === other.id &&
         this.title === other.title &&
-        this.playState === other.playState && isDeepEqual(this.metadata, other.metadata))
+        this.playMode === other.playMode &&
+        this.playPosition === other.playPosition &&
+        isDeepEqual(this.metadata, other.metadata))
     );
-  }
-
-  forceAudible(audible: boolean) {
-    this.audible = audible;
-  }
-
-  forceActive(active: boolean) {
-    this.active = active;
   }
 
   serialize(): UpdateActiveEventData {
     return {
-      current: {
+      metadata: {
         title: this.title,
-        artwork: this.metadata?.metadata?.artwork,
-        artist: this._overriddenTitle || !this.metadata?.metadata?.artist || this.metadata.metadata.title.includes('-') ? undefined : this.metadata.metadata?.artist,
+        artwork: this.metadata?.artwork,
+        artist: this.artist,
       },
-      state: this.playState,
+      position: this.playPosition,
     };
   }
 }
-
-

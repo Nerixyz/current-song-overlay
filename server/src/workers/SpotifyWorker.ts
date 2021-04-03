@@ -8,6 +8,7 @@ import { sleep } from "../utilities.ts";
 const handler = new MessageHandler<SpotifyEvents>(self as any);
 
 (async () => {
+  handler.emit("started", "started");
   const { cookies } = await handler.awaitEvent("init");
   const exitPromise = handler.awaitEvent("exit");
 

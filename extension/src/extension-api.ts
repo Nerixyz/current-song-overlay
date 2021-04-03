@@ -15,13 +15,6 @@ export function getFileUrl(path: string) {
   return browser.runtime.getURL(path);
 }
 
-export function sendRuntimeMessage<T extends keyof InternalMessageMap>(type: T, data: InternalMessageMap[T]) {
-  return browser.runtime.sendMessage({
-    type,
-    data
-  });
-}
-
 export function getAllWindows() {
   return browser.windows.getAll();
 }
