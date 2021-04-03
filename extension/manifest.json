@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "CurrentSong",
-  "version": "0.4.1",
+  "version": "0.5.0",
 
   "description": "Implements a client to send the current active tab to a local server",
 
