@@ -31,6 +31,7 @@ interface BrowserVideoPlayPosition {
 const handler = new MessageHandler<BrowserEvents>(self as any);
 
 (async () => {
+  handler.emit("started", "started");
   const { port } = await handler.awaitEvent("init");
 
   const browserServer = new WsServer<
