@@ -17,7 +17,7 @@ export function useMarquee(el: HTMLElement, maxWidth: number, speed: number) {
         el.animate([{
           transform: 'translateX(0)',
           opacity: '1',
-          easing: 'cubic-bezier(0.3, 0, 0.7, 1)'
+          offset: 0,
         }, {
           transform: `translateX(${animationWidth}px)`,
           opacity: '1',
@@ -32,7 +32,12 @@ export function useMarquee(el: HTMLElement, maxWidth: number, speed: number) {
           offset: 0.455,
         }, {
           opacity: '1',
+          transform: 'translateX(0)',
           offset: 0.5
+        }, {
+          opacity: '1',
+          transform: 'translateX(0)',
+          offset: 1
         }], {
           iterations: Infinity,
           duration: (width / speed) * 1000
