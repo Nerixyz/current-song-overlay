@@ -1,5 +1,7 @@
 # Current Song
 
+## ⚠ This project will be rewritten at [Nerixyz/current-song2](https://github.com/Nerixyz/current-song2).
+
 This application allows users (probably streamers) to show the playing song
 without worrying too much about the setup. Ideally you'll install the extension, start
 a service, and you are good to go. Now with Spotify you can't do this, you'll have to manually go in your browser and get the cookie.
