@@ -1,5 +1,5 @@
 $envFile = ".env";
-$configFile = ".config";
+$configFile = "config.json";
 # TODO: create function
 if (-not [System.IO.File]::Exists($envFile))
 {
