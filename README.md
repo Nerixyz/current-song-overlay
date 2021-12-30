@@ -12,6 +12,7 @@ Maybe I'll change that.
 - [Main Features](#main-features)
 - [Supported Interfaces](#supported-interfaces)
 - [How to set it up](#how-to-set-it-up)
+  - [Error Guide](#error-guide)
 - [Examples](#examples)
 - [Developing](#developing)
 
@@ -124,6 +125,23 @@ The addon is available on the [Chrome WebStore (click)](https://chrome.google.co
 
 1. Run the file `setup.bat`. If you have a regular VLC setup, the vlc module will work.
 2. Make sure `vlc` is enabled in your config file
+
+## Error Guide
+
+* **Service not available** or **cannot run `setup.ps1`:
+  * Open a new `powershell` window as **Admin**. 
+  * Run `Get-ExecutionPolicy -List`
+  * If the _ExecutionPolicy_ for **CurrentUser** says `Undefined` then run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+  * Right click the `build-master-<hash>.zip` and open the properties.
+  * At the bottom, check the box saying "_Unblock_" and click _Apply_ and _Close_.
+* **File not found**, in a folder with spaces
+  * For now, make sure to put this in a folder without spaces (and no spaces in parent folders).
+
+* **Service Output (stdout/stderr) redirection** (e.g. when the service isn't starting):
+  * **stdout** `.\nssm set CurrentSong AppStdout <path-to-logfile>.log`
+  * **stderr** `.\nssm set CurrentSong AppStderr <path-to-logfile>.log`
+
+_For more details, see [dudo24's Error Guide](https://github.com/dudo24/current-song-overlay/wiki#error-guide)._
 
 # Examples
 
